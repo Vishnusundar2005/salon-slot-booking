@@ -7,6 +7,8 @@ const {
   cancelBooking,
   getTodayBookings,
   getAllBookings,
+  updateBooking,
+  blockSlot,
 } = require('../controllers/bookingController');
 const { protect } = require('../middleware/authMiddleware');
 const { adminOnly } = require('../middleware/adminMiddleware');
@@ -22,5 +24,7 @@ router.put('/:id/cancel', protect, cancelBooking);
 // Admin
 router.get('/today', protect, adminOnly, getTodayBookings);
 router.get('/', protect, adminOnly, getAllBookings);
+router.put('/:id', protect, adminOnly, updateBooking);
+router.post('/block', protect, adminOnly, blockSlot);
 
 module.exports = router;

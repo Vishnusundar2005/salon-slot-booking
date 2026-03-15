@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import { formatDate, formatTime } from '../../../utils/dateFormatter';
-import { Search, Filter, CheckCircle, CreditCard, XCircle } from 'lucide-react';
+import { Search, Filter, CheckCircle, CreditCard, XCircle, Edit3, Calendar, Plus } from 'lucide-react';
 
 export default function AdminBookings() {
   const [bookings, setBookings] = useState([]);
+  const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterDate, setFilterDate] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
@@ -17,8 +18,27 @@ export default function AdminBookings() {
   const [referenceId, setReferenceId] = useState('');
   const [recording, setRecording] = useState(false);
 
+  // Edit Booking State
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [editForm, setEditForm] = useState({
+    serviceId: '',
+    date: '',
+    slotTime: '',
+    status: '',
+    notes: ''
+  });
+
+  // Block Slot State
+  const [blockingSlot, setBlockingSlot] = useState(false);
+  const [blockForm, setBlockForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    slotTime: '09:00',
+    notes: 'Holiday / Blocked'
+  });
+
   useEffect(() => {
     fetchBookings();
+    fetchServices();
   }, [filterDate, filterStatus]);
 
   const fetchBookings = async () => {
@@ -33,6 +53,15 @@ export default function AdminBookings() {
       toast.error('Failed to load bookings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchServices = async () => {
+    try {
+      const { data } = await api.get('/services');
+      setServices(data.filter(s => s.isActive));
+    } catch (error) {
+      console.error('Failed to fetch services');
     }
   };
 
@@ -67,38 +96,87 @@ export default function AdminBookings() {
     }
   };
 
+  const handleEditClick = (booking) => {
+    setEditingBooking(booking);
+    setEditForm({
+      serviceId: booking.service?._id || '',
+      date: booking.date,
+      slotTime: booking.slotTime,
+      status: booking.status,
+      notes: booking.notes || ''
+    });
+  };
+
+  const handleUpdateBooking = async () => {
+    try {
+      await api.put(`/bookings/${editingBooking._id}`, editForm);
+      toast.success('Booking updated successfully');
+      setEditingBooking(null);
+      fetchBookings();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update booking');
+    }
+  };
+
+  const handleBlockSlot = async () => {
+    try {
+      await api.post('/bookings/block', blockForm);
+      toast.success('Slot blocked successfully');
+      setBlockingSlot(false);
+      fetchBookings();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to block slot');
+    }
+  };
+
   return (
-    <div>
+    <div className="pb-20">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Manage Bookings</h1>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Manage Bookings</h1>
+          <p className="text-sm text-gray-500">View and manage all appointments</p>
+        </div>
         
-        {/* Filters */}
         <div className="flex flex-wrap gap-3">
-          <div className="relative">
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="">All Status</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="expired">Expired</option>
-          </select>
           <button 
-            onClick={() => { setFilterDate(''); setFilterStatus(''); }}
-            className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg"
+            onClick={() => setBlockingSlot(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-rose-600 text-white text-sm font-bold rounded-xl hover:bg-rose-700 transition shadow-lg shadow-rose-100"
           >
-            Clear
+            <Calendar size={18} />
+            Block Slot / Holiday
           </button>
+
+          <div className="h-10 w-[1px] bg-gray-200 hidden md:block"></div>
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3">
+            <div className="relative">
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="pl-3 pr-8 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="pl-3 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white"
+            >
+              <option value="">All Status</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="expired">Expired</option>
+              <option value="blocked">Blocked (Holiday)</option>
+            </select>
+            <button 
+              onClick={() => { setFilterDate(''); setFilterStatus(''); }}
+              className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
@@ -107,96 +185,253 @@ export default function AdminBookings() {
           <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-600"></div>
         </div>
       ) : bookings.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-300">
-          <p className="text-gray-500">No bookings found matching your filters.</p>
+        <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="text-gray-400" size={32} />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">No bookings found</h3>
+          <p className="text-gray-500">Try adjusting your filters or check back later.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date/Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {bookings.map((booking) => (
-                <tr key={booking._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-gray-900">{formatDate(booking.date, 'MMM do')}</div>
-                    <div className="text-xs text-gray-500">{formatTime(booking.slotTime)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{booking.user?.name}</div>
-                    <div className="text-xs text-blue-600 font-medium">{booking.user?.phone}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900 font-medium">{booking.service?.name}</div>
-                    <div className="text-xs text-gray-500">₹{booking.service?.price}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full capitalize
-                      ${booking.status === 'confirmed' ? 'bg-amber-100 text-amber-800' : 
-                        booking.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                        booking.status === 'cancelled' ? 'bg-red-100 text-red-800' : 
-                        'bg-gray-100 text-gray-800'}`}
-                    >
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end space-x-2">
-                      {booking.status === 'confirmed' && (
-                        <>
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-100">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Date/Time</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Customer</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Service</th>
+                  <th className="px-6 py-4 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-50">
+                {bookings.map((booking) => (
+                  <tr key={booking._id} className="hover:bg-gray-50/50 transition-colors group">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900">{formatDate(booking.date, 'MMM do, yyyy')}</div>
+                      <div className="text-xs text-indigo-600 font-medium">{formatTime(booking.slotTime)}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-bold text-gray-900">
+                        {booking.status === 'blocked' ? '--- BLOCKED ---' : (booking.user?.name || 'Unknown')}
+                      </div>
+                      <div className="text-xs text-gray-500 font-medium">{booking.user?.phone || 'No Phone'}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 font-bold">{booking.service?.name || 'Blocked Slot'}</div>
+                      <div className="text-xs text-gray-500">₹{booking.service?.price || 0}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2.5 py-1 text-[10px] font-black rounded-lg uppercase tracking-wider
+                        ${booking.status === 'confirmed' ? 'bg-amber-50 text-amber-700' : 
+                          booking.status === 'completed' ? 'bg-emerald-50 text-emerald-700' : 
+                          booking.status === 'cancelled' ? 'bg-rose-50 text-rose-700' : 
+                          booking.status === 'blocked' ? 'bg-gray-900 text-white' :
+                          'bg-gray-50 text-gray-600'}`}
+                      >
+                        {booking.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <div className="flex justify-end space-x-2">
+                        {['confirmed', 'blocked'].includes(booking.status) && (
                           <button 
-                            onClick={() => setSelectedBooking(booking)}
-                            className="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 shadow-sm"
-                            title="Complete & Pay"
+                            onClick={() => handleEditClick(booking)}
+                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-xl transition"
+                            title="Edit Slot"
                           >
-                            <CreditCard size={18} />
+                            <Edit3 size={18} />
                           </button>
+                        )}
+                        
+                        {booking.status === 'confirmed' && (
+                          <>
+                            <button 
+                              onClick={() => setSelectedBooking(booking)}
+                              className="bg-indigo-600 text-white p-2 rounded-xl hover:bg-indigo-700 shadow-md shadow-indigo-100 transition"
+                              title="Complete & Pay"
+                            >
+                              <CreditCard size={18} />
+                            </button>
+                            <button 
+                              onClick={() => cancelBooking(booking._id)}
+                              className="text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition"
+                              title="Cancel"
+                            >
+                              <XCircle size={18} />
+                            </button>
+                          </>
+                        )}
+
+                        {booking.status === 'blocked' && (
                           <button 
                             onClick={() => cancelBooking(booking._id)}
-                            className="bg-white border border-red-200 text-red-600 p-2 rounded-lg hover:bg-red-50"
-                            title="Cancel"
+                            className="text-rose-600 hover:bg-rose-50 p-2 rounded-xl transition"
+                            title="Unblock"
                           >
                             <XCircle size={18} />
                           </button>
-                        </>
-                      )}
-                      {booking.status === 'completed' && <CheckCircle size={20} className="text-green-500 mr-2" />}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        )}
+                        
+                        {booking.status === 'completed' && <CheckCircle size={20} className="text-emerald-500 mr-2" />}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Payment Recording Modal */}
+      {/* Edit Booking Modal */}
+      {editingBooking && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Edit Appointment</h3>
+            <p className="text-sm text-gray-500 mb-8 font-medium">Modify the booking details for {editingBooking.user?.name || 'Blocked Slot'}</p>
+
+            <div className="space-y-5 mb-8">
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Service</label>
+                <select
+                  value={editForm.serviceId}
+                  onChange={(e) => setEditForm({ ...editForm, serviceId: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold appearance-none bg-no-repeat bg-[right_1rem_center]"
+                >
+                  {services.map(s => <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>)}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={editForm.date}
+                    onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Slot Time</label>
+                  <input
+                    type="time"
+                    value={editForm.slotTime}
+                    onChange={(e) => setEditForm({ ...editForm, slotTime: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Admin Notes</label>
+                <textarea
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm({ ...editForm, notes: e.target.value })}
+                  placeholder="Internal notes..."
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold min-h-[100px]"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setEditingBooking(null)}
+                className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateBooking}
+                className="flex-[2] py-4 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Slot Modal */}
+      {blockingSlot && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Block Time Slot</h3>
+            <p className="text-sm text-gray-500 mb-8 font-medium">Prevent customers from booking this time.</p>
+
+            <div className="space-y-5 mb-8">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Date</label>
+                  <input
+                    type="date"
+                    value={blockForm.date}
+                    onChange={(e) => setBlockForm({ ...blockForm, date: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Starts At</label>
+                  <input
+                    type="time"
+                    value={blockForm.slotTime}
+                    step="1800"
+                    onChange={(e) => setBlockForm({ ...blockForm, slotTime: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Reason</label>
+                <input
+                  type="text"
+                  value={blockForm.notes}
+                  onChange={(e) => setBlockForm({ ...blockForm, notes: e.target.value })}
+                  placeholder="e.g. Lunch Break, Staff Meeting"
+                  className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setBlockingSlot(false)}
+                className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition"
+              >
+                Back
+              </button>
+              <button
+                onClick={handleBlockSlot}
+                className="flex-[2] py-4 bg-rose-600 text-white font-bold rounded-2xl shadow-lg shadow-rose-100 hover:bg-rose-700 transition"
+              >
+                Block this Slot
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Recording Modal (Keep as is but update styles if needed) */}
       {selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Record Payment</h3>
-            <p className="text-sm text-gray-500 mb-6">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] max-w-md w-full p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-2xl font-black text-gray-900 mb-2">Record Payment</h3>
+            <p className="text-sm text-gray-500 mb-8 font-medium">
               Completing booking for <span className="font-bold text-gray-800">{selectedBooking.user?.name}</span>
-              <br />
-              Service: <span className="font-medium">{selectedBooking.service?.name}</span>
             </p>
 
-            <div className="space-y-4 mb-8">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Amount to Pay</label>
-                <div className="text-3xl font-bold text-indigo-600">₹{selectedBooking.service?.price}</div>
+            <div className="space-y-6 mb-8">
+              <div className="p-6 bg-indigo-50 rounded-2xl border-2 border-indigo-100">
+                <label className="block text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Total Amount</label>
+                <div className="text-4xl font-black text-indigo-700">₹{selectedBooking.service?.price}</div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                <div className="grid grid-cols-2 gap-3">
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Payment Method</label>
+                <div className="grid grid-cols-3 gap-3">
                   {['cash', 'upi', 'card'].map((method) => (
                     <button
                       key={method}
@@ -204,10 +439,10 @@ export default function AdminBookings() {
                         setPaymentMethod(method);
                         if (method !== 'upi') setReferenceId('');
                       }}
-                      className={`py-3 rounded-xl border-2 font-medium transition-all capitalize ${
+                      className={`py-4 rounded-2xl border-2 font-bold transition-all capitalize text-sm ${
                         paymentMethod === method 
-                          ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
-                          : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-200'
+                          ? 'border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                          : 'border-gray-50 bg-gray-50 text-gray-500 hover:border-gray-100'
                       }`}
                     >
                       {method}
@@ -218,15 +453,14 @@ export default function AdminBookings() {
 
               {paymentMethod === 'upi' && (
                 <div className="animate-in slide-in-from-top-2 duration-300">
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Transaction Reference ID</label>
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Reference ID</label>
                   <input
                     type="text"
                     value={referenceId}
                     onChange={(e) => setReferenceId(e.target.value)}
-                    placeholder="Enter 12-digit UTR / Ref No."
-                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-100 rounded-xl focus:border-indigo-500 focus:ring-0 text-sm font-bold text-gray-700 placeholder:text-gray-300 transition-all"
+                    placeholder="XYZ12345678"
+                    className="w-full px-4 py-4 bg-gray-50 border-2 border-gray-50 rounded-2xl focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold"
                   />
-                  <p className="mt-1.5 text-[10px] text-gray-400 uppercase font-black tracking-widest">Required for UPI payments</p>
                 </div>
               )}
             </div>
@@ -234,16 +468,16 @@ export default function AdminBookings() {
             <div className="flex gap-3">
               <button
                 onClick={() => setSelectedBooking(null)}
-                className="flex-1 py-3 px-4 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="flex-1 py-4 font-bold text-gray-500 hover:bg-gray-100 rounded-2xl transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleRecordPayment}
                 disabled={recording}
-                className="flex-[2] py-3 px-4 bg-indigo-600 rounded-xl text-sm font-bold text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 disabled:opacity-50"
+                className="flex-[2] py-4 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition disabled:opacity-50"
               >
-                {recording ? 'Processing...' : 'Complete Payment'}
+                {recording ? 'Processing...' : 'Complete & Close'}
               </button>
             </div>
           </div>

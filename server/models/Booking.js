@@ -22,7 +22,7 @@ const bookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'completed', 'cancelled', 'expired'],
+      enum: ['pending', 'confirmed', 'completed', 'cancelled', 'expired', 'blocked'],
       default: 'confirmed',
     },
     reminderSent: {

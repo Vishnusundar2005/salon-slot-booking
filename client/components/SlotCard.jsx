@@ -4,11 +4,19 @@ import { CheckCircle2 } from 'lucide-react';
 
 export default function SlotCard({ slot, onSelect, selected, isExpired }) {
   if (slot.isBooked || isExpired) {
-    const statusLabel = slot.isBooked ? 'Booked' : 'Expired';
+    let statusLabel = slot.isBooked ? 'Booked' : 'Expired';
+    let subLabel = null;
+
+    if (slot.status === 'blocked') {
+      statusLabel = 'Not Available';
+      subLabel = slot.notes || 'Holiday / Break';
+    }
+
     return (
-      <div className="bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 rounded-2xl p-4 text-center cursor-not-allowed flex flex-col items-center justify-center space-y-1">
+      <div className={`bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-300 dark:text-gray-600 rounded-2xl p-4 text-center cursor-not-allowed flex flex-col items-center justify-center space-y-1 ${slot.status === 'blocked' ? 'opacity-80' : 'opacity-50'}`}>
         <span className="block font-black text-sm tracking-tight">{slot.time}</span>
-        <span className="text-[10px] uppercase font-black tracking-widest opacity-50">{statusLabel}</span>
+        <span className="text-[10px] uppercase font-black tracking-widest">{statusLabel}</span>
+        {subLabel && <span className="text-[10px] font-bold text-rose-500/70 italic leading-tight">{subLabel}</span>}
       </div>
     );
   }

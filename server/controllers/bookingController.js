@@ -24,8 +24,16 @@ const getAvailableSlots = async (req, res) => {
       status: { $nin: ['cancelled', 'expired'] },
     });
 
-    const bookedSlots = existingBookings.map((b) => b.slotTime);
-    const slots = generateSlots('09:00', '19:00', service.duration, bookedSlots);
+    // Build a map of booked slots with status and notes
+    const bookedSlotsMap = {};
+    existingBookings.forEach((b) => {
+      bookedSlotsMap[b.slotTime] = {
+        status: b.status,
+        notes: b.notes,
+      };
+    });
+
+    const slots = generateSlots('09:00', '19:00', service.duration, bookedSlotsMap);
     
     // Add price to each slot object
     const slotsWithPrice = slots.map(slot => ({
@@ -162,6 +170,96 @@ const getAllBookings = async (req, res) => {
   }
 };
 
+// @desc    Update a booking (admin)
+// @route   PUT /api/bookings/:id
+// @access  Private/Admin
+const updateBooking = async (req, res) => {
+  try {
+    const { serviceId, date, slotTime, status, notes } = req.body;
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // If date or time is changing, check for conflict
+    if ((date && date !== booking.date) || (slotTime && slotTime !== booking.slotTime)) {
+      const checkDate = date || booking.date;
+      const checkSlot = slotTime || booking.slotTime;
+
+      const existing = await Booking.findOne({
+        _id: { $ne: req.params.id },
+        date: checkDate,
+        slotTime: checkSlot,
+        status: { $nin: ['cancelled', 'expired'] },
+      });
+
+      if (existing) {
+        return res.status(409).json({ message: 'Target slot is already occupied' });
+      }
+    }
+
+    if (serviceId) booking.service = serviceId;
+    if (date) booking.date = date;
+    if (slotTime) booking.slotTime = slotTime;
+    if (status) booking.status = status;
+    if (notes !== undefined) booking.notes = notes;
+
+    const updatedBooking = await booking.save();
+    const populated = await updatedBooking.populate(['user', 'service']);
+
+    res.json(populated);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Block a slot (admin/holiday)
+// @route   POST /api/bookings/block
+// @access  Private/Admin
+const blockSlot = async (req, res) => {
+  try {
+    const { date, slotTime, notes } = req.body;
+
+    if (!date || !slotTime) {
+      return res.status(400).json({ message: 'Date and slotTime are required' });
+    }
+
+    // Check if already blocked or booked
+    const existing = await Booking.findOne({
+      date,
+      slotTime,
+      status: { $nin: ['cancelled', 'expired'] },
+    });
+
+    if (existing) {
+      return res.status(409).json({ message: 'Slot is already occupied (booked or blocked)' });
+    }
+
+    // For blocked slots, we can use the admin's user ID or a system ID if preferred.
+    // Here we use the admin's ID. We also need a "dummy" service or handle null service.
+    // Let's find any active service to satisfy the model requirement, or we can make service optional in model.
+    // Looking at the model, service is required.
+    const service = await Service.findOne({ isActive: true });
+    if (!service) {
+      return res.status(500).json({ message: 'No active service found to associate with blocked slot' });
+    }
+
+    const block = await Booking.create({
+      user: req.user._id,
+      service: service._id,
+      date,
+      slotTime,
+      status: 'blocked',
+      notes: notes || 'Blocked by Admin',
+    });
+
+    res.status(201).json(block);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   getAvailableSlots,
   createBooking,
@@ -169,4 +267,6 @@ module.exports = {
   cancelBooking,
   getTodayBookings,
   getAllBookings,
+  updateBooking,
+  blockSlot,
 };

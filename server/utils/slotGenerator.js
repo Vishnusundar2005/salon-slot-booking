@@ -11,7 +11,7 @@ const generateSlots = (
   startTime = '09:00',
   endTime = '19:00',
   slotDurationMins = 30,
-  bookedSlots = []
+  bookedSlots = {} // Changed from [] to {}
 ) => {
   const slots = [];
 
@@ -28,9 +28,13 @@ const generateSlots = (
     const mins = (current % 60).toString().padStart(2, '0');
     const slotTime = `${hours}:${mins}`;
 
+    const bookingInfo = bookedSlots[slotTime];
+
     slots.push({
       time: slotTime,
-      isBooked: bookedSlots.includes(slotTime),
+      isBooked: !!bookingInfo,
+      status: bookingInfo?.status || null,
+      notes: bookingInfo?.notes || null,
     });
 
     current += slotDurationMins;

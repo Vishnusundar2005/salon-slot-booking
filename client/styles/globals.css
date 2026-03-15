@@ -1,5 +1,6 @@
 @import "tailwindcss";
-@custom-variant dark (&:where(html.dark *, html.dark));
+
+@variant dark (&:where(.dark, .dark *));
 
 @theme {
   --color-indigo-50: #eef2ff;
@@ -10,36 +11,44 @@
   --color-indigo-700: #4338ca;
   --color-indigo-800: #3730a3;
   --color-indigo-900: #312e81;
+
+  --scrollbar-track: #f1f1f1;
+  --scrollbar-thumb: #c7c7cc;
+  --scrollbar-thumb-hover: #999;
 }
 
 @layer base {
   body {
-    @apply antialiased text-gray-800 bg-gray-50 transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100;
+    @apply antialiased text-gray-800 bg-gray-50 transition-colors duration-300;
+  }
+
+  .dark body {
+    @apply bg-gray-900 text-gray-100;
   }
 }
 
-/* Dark mode scrollbar */
-.dark ::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-.dark ::-webkit-scrollbar-thumb {
-  background: #333;
-}
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #444;
-}
-
-/* Custom scrollbar for modern feel */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--scrollbar-track);
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #c7c7cc;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #999;
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Dark mode scrollbar colors */
+.dark {
+  --scrollbar-track: #1a1a1a;
+  --scrollbar-thumb: #333;
+  --scrollbar-thumb-hover: #444;
 }
