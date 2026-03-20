@@ -25,7 +25,7 @@ app.use('/api/reports', reportRoutes);
 
 // --- Health Check & Debug ---
 app.get('/', (req, res) => {
-  res.json({ message: 'Slotify API is running (Diagnostic v2) 🚀' });
+  res.json({ message: 'Slotify API is running (Diagnostic v3) 🚀' });
 });
 
 app.get('/api/debug-env', (req, res) => {
