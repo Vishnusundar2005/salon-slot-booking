@@ -23,9 +23,17 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/reports', reportRoutes);
 
-// --- Health Check ---
+// --- Health Check & Debug ---
 app.get('/', (req, res) => {
   res.json({ message: 'Slotify API is running 🚀' });
+});
+
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    email_user_set: !!process.env.EMAIL_USER,
+    email_pass_set: !!process.env.EMAIL_PASS,
+    node_env: process.env.NODE_ENV
+  });
 });
 
 // --- Error Handling ---
