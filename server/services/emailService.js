@@ -1,28 +1,9 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Use STARTTLS
-  family: 4, // Force IPv4 to avoid ENETUNREACH on IPv6
-  logger: true, // Log to console
-  debug: true, // Include SMTP traffic in logs
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Verify connection configuration
-if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-  console.warn('⚠️ [Email] EMAIL_USER or EMAIL_PASS not set. Emails will not be sent.');
-}
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
  * Sends a booking confirmation email.
- * @param {object} user - User object
- * @param {object} booking - Booking object
- * @param {object} service - Service object
  */
 const sendBookingConfirmation = async (user, booking, service) => {
   try {
@@ -35,13 +16,12 @@ const sendBookingConfirmation = async (user, booking, service) => {
       return;
     }
 
-    console.log(`📧 [Email] Attempting to send confirmation to: ${user.email} (Service: ${service.name})`);
+    console.log(`📧 [Email] Sending confirmation via Resend to: ${user.email}`);
 
-    const mailOptions = {
-      from: `"Slotify Salon" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'Slotify Salon <onboarding@resend.dev>',
       to: user.email,
       subject: '✨ Booking Confirmed - Slotify Salon',
-      text: `Hi ${user.name},\n\nYour appointment for ${service.name} is confirmed!\n\n📅 Date: ${booking.date}\n⏰ Time: ${booking.slotTime}\n💰 Price: ₹${service.price}\n\nSee you soon!`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h2 style="color: #4f46e5;">Booking Confirmed!</h2>
@@ -56,14 +36,16 @@ const sendBookingConfirmation = async (user, booking, service) => {
           <p>See you soon! 👋<br/><strong>Slotify Salon Team</strong></p>
         </div>
       `,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(`📧 [Email] Confirmation sent to ${user.email} (ID: ${info.messageId})`);
-    return info;
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    console.log(`✅ [Email] Confirmation sent successfully (ID: ${data.id})`);
+    return data;
   } catch (error) {
     console.error(`❌ [Email] Error sending confirmation: ${error.message}`);
-    // Non-blocking error
   }
 };
 
@@ -72,11 +54,10 @@ const sendBookingConfirmation = async (user, booking, service) => {
  */
 const sendReminder = async (user, booking, service) => {
   try {
-    const mailOptions = {
-      from: `"Slotify Salon" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'Slotify Salon <onboarding@resend.dev>',
       to: user.email,
       subject: '🚨 HURRY UP! Your slot is waiting - Slotify Salon',
-      text: `Hi ${user.name},\n\nHurry up, your slot is waiting! Your appointment for ${service.name} starts in just 10 minutes.\n\n⏰ Time: ${booking.slotTime}\n\nPlease arrive quickly! See you soon!`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 2px solid #ef4444; border-radius: 12px; background-color: #fffafb;">
           <h2 style="color: #ef4444; font-size: 24px; text-transform: uppercase;">🚨 HURRY UP!</h2>
@@ -90,11 +71,11 @@ const sendReminder = async (user, booking, service) => {
           <p>Best,<br/><strong>Slotify Salon Team</strong></p>
         </div>
       `,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
+    if (error) throw new Error(error.message);
     console.log(`📧 [Email] Reminder sent to ${user.email}`);
-    return info;
+    return data;
   } catch (error) {
     console.error(`❌ [Email] Error sending reminder: ${error.message}`);
   }
@@ -105,11 +86,10 @@ const sendReminder = async (user, booking, service) => {
  */
 const sendSlotExpired = async (user, booking, service) => {
   try {
-    const mailOptions = {
-      from: `"Slotify Salon" <${process.env.EMAIL_USER}>`,
+    const { data, error } = await resend.emails.send({
+      from: 'Slotify Salon <onboarding@resend.dev>',
       to: user.email,
       subject: '⚠️ Appointment Expired - Slotify Salon',
-      text: `Hi ${user.name},\n\nYour appointment for ${service.name} at ${booking.slotTime} on ${booking.date} has been marked as expired as the time has passed.\n\nBest, Slotify Salon Team`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
           <h2 style="color: #ef4444;">Appointment Expired</h2>
@@ -120,11 +100,11 @@ const sendSlotExpired = async (user, booking, service) => {
           <p>Best,<br/><strong>Slotify Salon Team</strong></p>
         </div>
       `,
-    };
+    });
 
-    const info = await transporter.sendMail(mailOptions);
+    if (error) throw new Error(error.message);
     console.log(`📧 [Email] Expiration notice sent to ${user.email}`);
-    return info;
+    return data;
   } catch (error) {
     console.error(`❌ [Email] Error sending expiration notice: ${error.message}`);
   }
