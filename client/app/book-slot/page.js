@@ -70,7 +70,10 @@ function BookSlotContent() {
         notes,
       });
       toast.success('🎉 Booking confirmed!');
-      router.push('/my-bookings');
+      // Wait for a moment to let the user see the success message
+      setTimeout(() => {
+        router.push('/my-bookings');
+      }, 1500);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Booking failed');
     } finally {

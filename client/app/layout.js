@@ -26,7 +26,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
-      <body className="bg-gray-50 dark:bg-gray-900 min-h-screen flex flex-col font-inter text-gray-900 dark:text-gray-100 antialiased transition-colors duration-300">
+      <body className="min-h-screen flex flex-col font-inter">
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
