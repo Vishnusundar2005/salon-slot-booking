@@ -81,6 +81,10 @@ const createBooking = async (req, res) => {
 
     const populated = await booking.populate(['user', 'service']);
     
+    // Check if user or service is missing and log it
+    if (!populated.user) console.warn('⚠️ [Booking] User population failed for booking ID:', populated._id);
+    if (!populated.service) console.warn('⚠️ [Booking] Service population failed for booking ID:', populated._id);
+
     // Send Email Confirmation (Async)
     sendBookingConfirmation(populated.user, populated, populated.service).catch(err => 
       console.error('Email Error:', err.message)

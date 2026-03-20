@@ -23,6 +23,17 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
  */
 const sendBookingConfirmation = async (user, booking, service) => {
   try {
+    if (!user || !user.email) {
+      console.error('❌ [Email] Cannot send confirmation: User or user email missing.');
+      return;
+    }
+    if (!service) {
+      console.error('❌ [Email] Cannot send confirmation: Service information missing.');
+      return;
+    }
+
+    console.log(`📧 [Email] Attempting to send confirmation to: ${user.email} (Service: ${service.name})`);
+
     const mailOptions = {
       from: `"Slotify Salon" <${process.env.EMAIL_USER}>`,
       to: user.email,
