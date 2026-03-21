@@ -1,27 +1,15 @@
 const { Resend } = require('resend');
 
-// Check if API key exists
-if (!process.env.RESEND_API_KEY) {
-  console.error('⚠️ [Email] RESEND_API_KEY is not defined in environment variables.');
-}
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend client only if API key exists to prevent crash on startup
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 /**
  * Sends a booking confirmation email to the customer.
  */
 const sendBookingConfirmation = async (user, booking, service) => {
   try {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY missing');
-    }
-
-    if (!user || !user.email) {
-      console.error('❌ [Email] Cannot send confirmation: User or user email missing.');
-      return;
-    }
-    if (!service) {
-      console.error('❌ [Email] Cannot send confirmation: Service information missing.');
+    if (!resend) {
+      console.warn('⚠️ [Email] Resend client not initialized. Check RESEND_API_KEY.');
       return;
     }
 
@@ -72,6 +60,11 @@ const sendAdminAlert = async (user, booking, service) => {
       return;
     }
 
+    if (!resend) {
+      console.warn('⚠️ [Email] Resend client not initialized. Skipping admin alert.');
+      return;
+    }
+
     console.log(`📧 [Email] Sending admin alert to: ${adminEmail}`);
 
     const { data, error } = await resend.emails.send({
@@ -108,7 +101,7 @@ const sendAdminAlert = async (user, booking, service) => {
  */
 const sendReminder = async (user, booking, service) => {
   try {
-    if (!process.env.RESEND_API_KEY) return;
+    if (!resend) return;
 
     const { data, error } = await resend.emails.send({
       from: 'Slotify Salon <onboarding@resend.dev>',
@@ -142,7 +135,7 @@ const sendReminder = async (user, booking, service) => {
  */
 const sendSlotExpired = async (user, booking, service) => {
   try {
-    if (!process.env.RESEND_API_KEY) return;
+    if (!resend) return;
 
     const { data, error } = await resend.emails.send({
       from: 'Slotify Salon <onboarding@resend.dev>',
