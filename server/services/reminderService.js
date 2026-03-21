@@ -36,6 +36,7 @@ const sendUpcomingReminders = async () => {
       .populate('service', 'name price');
 
     for (const booking of bookings) {
+      console.log(`📧 [Reminder] sending to: ${booking.user.email} for ${booking.service.name}`);
       await sendReminder(booking.user, booking, booking.service);
       booking.reminderSent = true;
       await booking.save();
