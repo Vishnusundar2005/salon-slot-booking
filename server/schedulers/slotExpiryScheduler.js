@@ -10,12 +10,21 @@ const startSlotExpiryScheduler = () => {
   cron.schedule('*/5 * * * *', async () => {
     try {
 
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now
-        .getMinutes()
+      // Use IST (India Standard Time) for all calculations
+      const getISTDate = () => {
+        const now = new Date();
+        // IST is UTC + 5:30
+        return new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      };
+
+      const istNow = getISTDate();
+      const today = istNow.toISOString().split('T')[0];
+      const currentTime = `${istNow.getUTCHours().toString().padStart(2, '0')}:${istNow
+        .getUTCMinutes()
         .toString()
         .padStart(2, '0')}`;
+      
+      console.log(`🧹 [Expiry] Checking expiry for: ${currentTime} on ${today} (IST)`);
 
       // Find confirmed bookings from today that have already passed
       const expiredBookings = await Booking.find({

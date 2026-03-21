@@ -1,12 +1,21 @@
 const { Resend } = require('resend');
 
+// Check if API key exists
+if (!process.env.RESEND_API_KEY) {
+  console.error('⚠️ [Email] RESEND_API_KEY is not defined in environment variables.');
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 /**
- * Sends a booking confirmation email.
+ * Sends a booking confirmation email to the customer.
  */
 const sendBookingConfirmation = async (user, booking, service) => {
   try {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY missing');
+    }
+
     if (!user || !user.email) {
       console.error('❌ [Email] Cannot send confirmation: User or user email missing.');
       return;
@@ -46,6 +55,51 @@ const sendBookingConfirmation = async (user, booking, service) => {
     return data;
   } catch (error) {
     console.error(`❌ [Email] Error sending confirmation: ${error.message}`);
+    if (error.message.includes('onboarding')) {
+      console.warn('💡 [Tip] If using onboarding@resend.dev, you can only send to your own registered email address.');
+    }
+  }
+};
+
+/**
+ * Sends an alert to the admin about a new booking.
+ */
+const sendAdminAlert = async (user, booking, service) => {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+      console.warn('⚠️ [Email] ADMIN_EMAIL not configured. Skipping admin alert.');
+      return;
+    }
+
+    console.log(`📧 [Email] Sending admin alert to: ${adminEmail}`);
+
+    const { data, error } = await resend.emails.send({
+      from: 'Slotify Alerts <onboarding@resend.dev>',
+      to: adminEmail,
+      subject: `🔔 New Booking: ${service.name} - ${booking.date}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #4f46e5; border-radius: 8px; background-color: #f8fafc;">
+          <h2 style="color: #4f46e5;">New Appointment Booked</h2>
+          <p>A new booking has been received!</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p>👤 <strong>Customer:</strong> ${user.name} (${user.email})</p>
+          <p>📞 <strong>Phone:</strong> ${user.phone}</p>
+          <p>💈 <strong>Service:</strong> ${service.name}</p>
+          <p>📅 <strong>Date:</strong> ${booking.date}</p>
+          <p>⏰ <strong>Time:</strong> ${booking.slotTime}</p>
+          <p>📝 <strong>Notes:</strong> ${booking.notes || 'No notes'}</p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #64748b;">Manage this booking in the Admin Dashboard.</p>
+        </div>
+      `,
+    });
+
+    if (error) throw new Error(error.message);
+    console.log(`✅ [Email] Admin alert sent successfully`);
+    return data;
+  } catch (error) {
+    console.error(`❌ [Email] Error sending admin alert: ${error.message}`);
   }
 };
 
@@ -54,6 +108,8 @@ const sendBookingConfirmation = async (user, booking, service) => {
  */
 const sendReminder = async (user, booking, service) => {
   try {
+    if (!process.env.RESEND_API_KEY) return;
+
     const { data, error } = await resend.emails.send({
       from: 'Slotify Salon <onboarding@resend.dev>',
       to: user.email,
@@ -86,6 +142,8 @@ const sendReminder = async (user, booking, service) => {
  */
 const sendSlotExpired = async (user, booking, service) => {
   try {
+    if (!process.env.RESEND_API_KEY) return;
+
     const { data, error } = await resend.emails.send({
       from: 'Slotify Salon <onboarding@resend.dev>',
       to: user.email,
@@ -112,6 +170,7 @@ const sendSlotExpired = async (user, booking, service) => {
 
 module.exports = {
   sendBookingConfirmation,
+  sendAdminAlert,
   sendReminder,
   sendSlotExpired,
 };

@@ -7,16 +7,24 @@ const { sendReminder } = require('./emailService');
  */
 const sendUpcomingReminders = async () => {
   try {
-    const now = new Date();
-    const today = now.toLocaleDateString('en-CA'); // Gets YYYY-MM-DD in local time
+    // Use IST (India Standard Time) for all calculations
+    const getISTDate = () => {
+      const now = new Date();
+      // IST is UTC + 5:30
+      return new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+    };
 
-    // Current time + 5 min window (e.g. "10:05" to "10:10")
-    const addMins = (date, mins) => new Date(date.getTime() + mins * 60000);
-    const format = (d) =>
-      `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    const istNow = getISTDate();
+    const today = istNow.toISOString().split('T')[0];
 
-    const windowStart = format(addMins(now, 5));
-    const windowEnd = format(addMins(now, 10));
+    const formatTime = (d) => {
+      return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
+    };
+
+    const windowStart = formatTime(new Date(istNow.getTime() + 5 * 60000));
+    const windowEnd = formatTime(new Date(istNow.getTime() + 10 * 60000));
+
+    console.log(`⏰ [Reminder] Checking IST window: ${windowStart} - ${windowEnd} on ${today}`);
 
     const bookings = await Booking.find({
       date: today,

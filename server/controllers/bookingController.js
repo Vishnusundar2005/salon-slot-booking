@@ -2,7 +2,7 @@ const Booking = require('../models/Booking');
 const Service = require('../models/Service');
 const User = require('../models/User');
 const { generateSlots } = require('../utils/slotGenerator');
-const { sendBookingConfirmation } = require('../services/emailService');
+const { sendBookingConfirmation, sendAdminAlert } = require('../services/emailService');
 
 // @desc    Get available slots for a given date and service
 // @route   GET /api/bookings/slots?date=YYYY-MM-DD&serviceId=xxx
@@ -33,7 +33,7 @@ const getAvailableSlots = async (req, res) => {
       };
     });
 
-    const slots = generateSlots('09:00', '19:00', service.duration, bookedSlotsMap);
+    const slots = generateSlots('09:00', '22:00', service.duration, bookedSlotsMap);
     
     // Add price to each slot object
     const slotsWithPrice = slots.map(slot => ({
@@ -85,9 +85,13 @@ const createBooking = async (req, res) => {
     if (!populated.user) console.warn('⚠️ [Booking] User population failed for booking ID:', populated._id);
     if (!populated.service) console.warn('⚠️ [Booking] Service population failed for booking ID:', populated._id);
 
-    // Send Email Confirmation (Async)
+    // Send Email Notifications (Async)
     sendBookingConfirmation(populated.user, populated, populated.service).catch(err => 
-      console.error('Email Error:', err.message)
+      console.error('Email Error (Customer):', err.message)
+    );
+    
+    sendAdminAlert(populated.user, populated, populated.service).catch(err => 
+      console.error('Email Error (Admin):', err.message)
     );
 
     res.status(201).json(populated);

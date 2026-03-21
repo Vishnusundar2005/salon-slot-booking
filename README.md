@@ -32,7 +32,7 @@ Slotify is a state-of-the-art, full-stack salon management and appointment booki
 - **Node.js & Express**
 - **MongoDB & Mongoose**
 - **JSON Web Tokens (JWT)** (Secure Auth)
-- **Nodemailer** (Email Service)
+- **Resend API** (Modern Email Infrastructure)
 - **Node-Cron** (Scheduled Workflows)
 
 ## 📦 Project Structure
@@ -55,7 +55,7 @@ salon-slot-booking/
 ### **Prerequisites**
 - Node.js (v18+)
 - MongoDB Atlas account
-- Gmail App Password (for Nodemailer)
+- Resend API Key (for email notifications)
 
 ### **Setup**
 
@@ -69,7 +69,7 @@ salon-slot-booking/
    ```bash
    cd server
    npm install
-   # Create a .env file with your credentials (PORT, MONGO_URI, JWT_SECRET, EMAIL_USER, etc.)
+   # Create a .env file with your credentials (PORT, MONGO_URI, JWT_SECRET, RESEND_API_KEY, ADMIN_EMAIL)
    npm run dev
    ```
 

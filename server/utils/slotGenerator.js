@@ -9,7 +9,7 @@
  */
 const generateSlots = (
   startTime = '09:00',
-  endTime = '19:00',
+  endTime = '22:00',
   slotDurationMins = 30,
   bookedSlots = {} // Changed from [] to {}
 ) => {
