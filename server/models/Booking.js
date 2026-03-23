@@ -37,14 +37,9 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Compound index to prevent double booking the same slot on the same date,
-// but only for non-cancelled and non-expired bookings.
-bookingSchema.index(
-  { date: 1, slotTime: 1 },
-  { 
-    unique: true, 
-    partialFilterExpression: { status: { $nin: ['cancelled', 'expired'] } } 
-  }
-);
+// Index to optimize queries by date and slot time.
+// Unique constraint removed to support re-booking cancelled/expired slots properly.
+// Availability is managed via code-level checks in the booking controller.
+bookingSchema.index({ date: 1, slotTime: 1 });
 
 module.exports = mongoose.model('Booking', bookingSchema);
