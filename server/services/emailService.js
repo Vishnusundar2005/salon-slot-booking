@@ -16,7 +16,7 @@ const sendBookingConfirmation = async (user, booking, service) => {
     console.log(`📧 [Email] Sending confirmation via Resend to: ${user.email}`);
 
     const { data, error } = await resend.emails.send({
-      from: 'Slotify Salon <onboarding@resend.dev>',
+      from: 'onboarding@resend.dev',
       to: user.email,
       subject: '✨ Booking Confirmed - Slotify Salon',
       html: `
@@ -68,7 +68,7 @@ const sendAdminAlert = async (user, booking, service) => {
     console.log(`📧 [Email] Sending admin alert to: ${adminEmail}`);
 
     const { data, error } = await resend.emails.send({
-      from: 'Slotify Alerts <onboarding@resend.dev>',
+      from: 'onboarding@resend.dev',
       to: adminEmail,
       subject: `🔔 New Booking: ${service.name} - ${booking.date}`,
       html: `
@@ -104,7 +104,7 @@ const sendReminder = async (user, booking, service) => {
     if (!resend) return;
 
     const { data, error } = await resend.emails.send({
-      from: 'Slotify Salon <onboarding@resend.dev>',
+      from: 'onboarding@resend.dev',
       to: user.email,
       subject: '🚨 HURRY UP! Your slot is waiting - Slotify Salon',
       html: `
@@ -138,7 +138,7 @@ const sendSlotExpired = async (user, booking, service) => {
     if (!resend) return;
 
     const { data, error } = await resend.emails.send({
-      from: 'Slotify Salon <onboarding@resend.dev>',
+      from: 'onboarding@resend.dev',
       to: user.email,
       subject: '⚠️ Appointment Expired - Slotify Salon',
       html: `
