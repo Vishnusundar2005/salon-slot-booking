@@ -44,10 +44,11 @@ const sendBookingConfirmation = async (user, booking, service) => {
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
     const isRestricted = 
-      error.message.includes('onboarding') || 
-      error.message.includes('restricted') || 
-      error.message.includes('verify a domain') || 
-      error.message.includes('testing emails');
+      error.message.toLowerCase().includes('onboarding') || 
+      error.message.toLowerCase().includes('restricted') || 
+      error.message.toLowerCase().includes('verify a domain') || 
+      error.message.toLowerCase().includes('testing emails') ||
+      error.message.toLowerCase().includes('own email address');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting confirmation for ${user.email} to Admin: ${adminEmail}`);
@@ -161,10 +162,11 @@ const sendReminder = async (user, booking, service) => {
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
     const isRestricted = 
-      error.message.includes('onboarding') || 
-      error.message.includes('restricted') || 
-      error.message.includes('verify a domain') || 
-      error.message.includes('testing emails');
+      error.message.toLowerCase().includes('onboarding') || 
+      error.message.toLowerCase().includes('restricted') || 
+      error.message.toLowerCase().includes('verify a domain') || 
+      error.message.toLowerCase().includes('testing emails') ||
+      error.message.toLowerCase().includes('own email address');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting reminder for ${user.email} to Admin: ${adminEmail}`);
@@ -227,10 +229,11 @@ const sendSlotExpired = async (user, booking, service) => {
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
     const isRestricted = 
-      error.message.includes('onboarding') || 
-      error.message.includes('restricted') || 
-      error.message.includes('verify a domain') || 
-      error.message.includes('testing emails');
+      error.message.toLowerCase().includes('onboarding') || 
+      error.message.toLowerCase().includes('restricted') || 
+      error.message.toLowerCase().includes('verify a domain') || 
+      error.message.toLowerCase().includes('testing emails') ||
+      error.message.toLowerCase().includes('own email address');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting expiration notice for ${user.email} to Admin: ${adminEmail}`);
