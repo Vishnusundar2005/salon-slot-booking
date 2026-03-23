@@ -43,7 +43,11 @@ const sendBookingConfirmation = async (user, booking, service) => {
     return data;
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
-    const isRestricted = error.message.includes('onboarding') || error.message.includes('restricted');
+    const isRestricted = 
+      error.message.includes('onboarding') || 
+      error.message.includes('restricted') || 
+      error.message.includes('verify a domain') || 
+      error.message.includes('testing emails');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting confirmation for ${user.email} to Admin: ${adminEmail}`);
@@ -156,7 +160,11 @@ const sendReminder = async (user, booking, service) => {
     return data;
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
-    const isRestricted = error.message.includes('onboarding') || error.message.includes('restricted');
+    const isRestricted = 
+      error.message.includes('onboarding') || 
+      error.message.includes('restricted') || 
+      error.message.includes('verify a domain') || 
+      error.message.includes('testing emails');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting reminder for ${user.email} to Admin: ${adminEmail}`);
@@ -218,7 +226,11 @@ const sendSlotExpired = async (user, booking, service) => {
     return data;
   } catch (error) {
     const adminEmail = process.env.ADMIN_EMAIL;
-    const isRestricted = error.message.includes('onboarding') || error.message.includes('restricted');
+    const isRestricted = 
+      error.message.includes('onboarding') || 
+      error.message.includes('restricted') || 
+      error.message.includes('verify a domain') || 
+      error.message.includes('testing emails');
 
     if (isRestricted && adminEmail && user.email !== adminEmail) {
       console.warn(`⚠️ [Email] Restricted by Resend. Redirecting expiration notice for ${user.email} to Admin: ${adminEmail}`);
