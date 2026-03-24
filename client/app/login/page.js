@@ -103,10 +103,10 @@ export default function Login() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/admin/login/" className="inline-flex items-center space-x-2 text-xs font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest hover:text-indigo-400 transition-colors">
+          <a href="/slotify/admin/login/" className="inline-flex items-center space-x-2 text-xs font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest hover:text-indigo-400 transition-colors">
             <User size={14} />
             <span>Switch to Admin Portal</span>
-          </Link>
+          </a>
         </div>
       </div>
     </div>
