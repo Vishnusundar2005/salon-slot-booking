@@ -1,26 +1,21 @@
 'use client';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
 export default function ProtectedRoute({ children, requireAdmin = false }) {
   const { user, loading } = useAuth();
-  const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // Not logged in -> redirect based on requirement
-        router.push(requireAdmin ? '/admin/login/' : '/login/');
+        // Not logged in -> redirect using window.location for reliability on static hosts
+        window.location.href = requireAdmin ? '/slotify/admin/login/' : '/slotify/login/';
       } else if (requireAdmin && user.role !== 'admin') {
         // Logged in but not admin -> redirect to home
-        router.push('/');
-      } else if (!requireAdmin && user.role === 'admin') {
-         // Admin trying to access customer routes (optional protection)
-         // Maybe let them, or redirect to dashboard
+        window.location.href = '/slotify/';
       }
     }
-  }, [user, loading, router, requireAdmin]);
+  }, [user, loading, requireAdmin]);
 
   if (loading) {
     return (

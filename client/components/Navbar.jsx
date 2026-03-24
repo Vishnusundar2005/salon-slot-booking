@@ -1,10 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
-import { Menu, X, Scissors, LayoutDashboard, Calendar, LogOut, ChevronRight, Sun, Moon } from 'lucide-react';
+import { Menu, X, Scissors, LayoutDashboard, LogOut, ChevronRight, Sun, Moon } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -14,32 +13,37 @@ export default function Navbar() {
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/slotify/';
+  };
+
   return (
     <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md sticky top-0 z-[100] border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-20">
           {/* Logo & Desktop Nav */}
           <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2 group" onClick={closeMenu}>
+            <a href="/slotify/" className="flex items-center space-x-2 group" onClick={closeMenu}>
               <div className="bg-indigo-600 p-2 rounded-xl group-hover:rotate-12 transition-transform duration-300">
                 <Scissors className="text-white h-6 w-6" />
               </div>
               <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white font-outfit">
                 Slotify
               </span>
-            </Link>
+            </a>
 
             <div className="hidden md:ml-10 md:flex md:space-x-8">
-              <Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
+              <a href="/slotify/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                 Home
-              </Link>
-              <Link href="/services/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
+              </a>
+              <a href="/slotify/services/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                 Services
-              </Link>
+              </a>
               {user && user.role === 'customer' && (
-                <Link href="/my-bookings/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
+                <a href="/slotify/my-bookings/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                   My Bookings
-                </Link>
+                </a>
               )}
             </div>
           </div>
@@ -53,16 +57,16 @@ export default function Navbar() {
                   <span className="text-sm font-black text-gray-900 dark:text-gray-100">Hi, {user.name.split(' ')[0]}</span>
                 </div>
                 {user.role === 'admin' && (
-                  <Link 
-                    href="/admin/dashboard/" 
+                  <a 
+                    href="/slotify/admin/dashboard/" 
                     className="flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors"
                   >
                     <LayoutDashboard size={18} />
                     <span>Dashboard</span>
-                  </Link>
+                  </a>
                 )}
                 <button
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="p-2 text-gray-400 hover:text-red-600 transition-colors"
                   title="Logout"
                 >
@@ -71,15 +75,15 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/login/" className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4">
+                <a href="/slotify/login/" className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4">
                   Login
-                </Link>
-                <Link
-                  href="/register/"
+                </a>
+                <a
+                  href="/slotify/register/"
                   className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95"
                 >
                   Sign Up
-                </Link>
+                </a>
               </div>
             )}
 
@@ -117,22 +121,22 @@ export default function Navbar() {
                 {theme === 'light' ? <><Moon size={18} /><span>Dark Mode</span></> : <><Sun size={18} /><span>Light Mode</span></>}
               </button>
             </div>
-            <Link
-              href="/"
+            <a
+              href="/slotify/"
               onClick={closeMenu}
               className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 active:bg-indigo-50 dark:active:bg-indigo-900/30 active:text-indigo-600"
             >
               <span>Home</span>
               <ChevronRight size={18} className="text-gray-400" />
-            </Link>
-            <Link
-              href="/services/"
+            </a>
+            <a
+              href="/slotify/services/"
               onClick={closeMenu}
               className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 active:bg-indigo-50 dark:active:bg-indigo-900/30 active:text-indigo-600"
             >
               <span>Services</span>
               <ChevronRight size={18} className="text-gray-400" />
-            </Link>
+            </a>
             {user && user.role === 'customer' && (
               <Link
                 href="/my-bookings/"
@@ -152,17 +156,17 @@ export default function Navbar() {
                     <p className="text-lg font-black text-gray-900 dark:text-white">Hi, {user.name}</p>
                   </div>
                   {user.role === 'admin' && (
-                    <Link
-                      href="/admin/dashboard/"
+                    <a
+                      href="/slotify/admin/dashboard/"
                       onClick={closeMenu}
                       className="flex items-center space-x-3 w-full px-4 py-4 rounded-2xl bg-indigo-600 text-white font-bold"
                     >
                       <LayoutDashboard size={20} />
                       <span>Admin Dashboard</span>
-                    </Link>
+                    </a>
                   )}
                   <button
-                    onClick={() => { logout(); closeMenu(); }}
+                    onClick={handleLogout}
                     className="flex items-center space-x-3 w-full px-4 py-4 rounded-2xl bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-bold"
                   >
                     <LogOut size={20} />
@@ -171,20 +175,20 @@ export default function Navbar() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-3 px-2">
-                  <Link
-                    href="/login/"
+                  <a
+                    href="/slotify/login/"
                     onClick={closeMenu}
                     className="flex items-center justify-center py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800"
                   >
                     Login
-                  </Link>
-                  <Link
-                    href="/register/"
+                  </a>
+                  <a
+                    href="/slotify/register/"
                     onClick={closeMenu}
                     className="flex items-center justify-center py-4 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 dark:shadow-none"
                   >
                     Sign Up
-                  </Link>
+                  </a>
                 </div>
               )}
             </div>

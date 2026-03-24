@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import api from '../../../services/api';
 import { useAuth } from '../../../hooks/useAuth';
@@ -9,7 +8,6 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -19,10 +17,12 @@ export default function AdminLogin() {
       const { data } = await api.post('/auth/admin/login', { email, password });
       login(data, data.token);
       toast.success('Admin authenticated');
-      router.push('/admin/dashboard/');
+      // Use window.location to force a full page load and bypass broken SPA router
+      setTimeout(() => {
+        window.location.href = '/slotify/admin/dashboard/';
+      }, 500);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Admin login failed');
-    } finally {
       setLoading(false);
     }
   };
