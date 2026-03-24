@@ -16,7 +16,8 @@ export default function AdminLayout({ children }) {
   ];
 
   // Don't wrap login page in ProtectedRoute or Sidebar
-  if (pathname === '/admin/login') {
+  // Using startsWith to handle trailing slashes or sub-paths
+  if (pathname.startsWith('/admin/login')) {
     return <>{children}</>;
   }
 
@@ -30,7 +31,8 @@ export default function AdminLayout({ children }) {
           </div>
           <nav className="space-y-1">
             {navigation.map((item) => {
-              const isActive = pathname === item.href;
+              // Handle trailing slashes for active state comparison
+              const isActive = pathname === item.href || pathname === `${item.href}/`;
               const Icon = item.icon;
               return (
                 <Link
