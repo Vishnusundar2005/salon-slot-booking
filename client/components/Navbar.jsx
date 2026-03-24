@@ -33,11 +33,11 @@ export default function Navbar() {
               <Link href="/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                 Home
               </Link>
-              <Link href="/services" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
+              <Link href="/services/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                 Services
               </Link>
               {user && user.role === 'customer' && (
-                <Link href="/my-bookings" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
+                <Link href="/my-bookings/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                   My Bookings
                 </Link>
               )}
@@ -54,7 +54,7 @@ export default function Navbar() {
                 </div>
                 {user.role === 'admin' && (
                   <Link 
-                    href="/admin/dashboard" 
+                    href="/admin/dashboard/" 
                     className="flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors"
                   >
                     <LayoutDashboard size={18} />
@@ -71,11 +71,11 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Link href="/login" className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4">
+                <Link href="/login/" className="text-sm font-bold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 px-4">
                   Login
                 </Link>
                 <Link
-                  href="/register"
+                  href="/register/"
                   className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-indigo-100 dark:shadow-none hover:bg-indigo-700 transition-all active:scale-95"
                 >
                   Sign Up
@@ -126,7 +126,7 @@ export default function Navbar() {
               <ChevronRight size={18} className="text-gray-400" />
             </Link>
             <Link
-              href="/services"
+              href="/services/"
               onClick={closeMenu}
               className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 active:bg-indigo-50 dark:active:bg-indigo-900/30 active:text-indigo-600"
             >
@@ -135,7 +135,7 @@ export default function Navbar() {
             </Link>
             {user && user.role === 'customer' && (
               <Link
-                href="/my-bookings"
+                href="/my-bookings/"
                 onClick={closeMenu}
                 className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 active:bg-indigo-50 dark:active:bg-indigo-900/30 active:text-indigo-600"
               >
@@ -153,7 +153,7 @@ export default function Navbar() {
                   </div>
                   {user.role === 'admin' && (
                     <Link
-                      href="/admin/dashboard"
+                      href="/admin/dashboard/"
                       onClick={closeMenu}
                       className="flex items-center space-x-3 w-full px-4 py-4 rounded-2xl bg-indigo-600 text-white font-bold"
                     >
@@ -172,14 +172,14 @@ export default function Navbar() {
               ) : (
                 <div className="grid grid-cols-2 gap-3 px-2">
                   <Link
-                    href="/login"
+                    href="/login/"
                     onClick={closeMenu}
                     className="flex items-center justify-center py-4 rounded-2xl font-bold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800"
                   >
                     Login
                   </Link>
                   <Link
-                    href="/register"
+                    href="/register/"
                     onClick={closeMenu}
                     className="flex items-center justify-center py-4 rounded-2xl font-bold bg-indigo-600 text-white shadow-lg shadow-indigo-100 dark:shadow-none"
                   >

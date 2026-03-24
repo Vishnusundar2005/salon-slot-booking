@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
     if (!loading) {
       if (!user) {
         // Not logged in -> redirect based on requirement
-        router.push(requireAdmin ? '/admin/login' : '/login');
+        router.push(requireAdmin ? '/admin/login/' : '/login/');
       } else if (requireAdmin && user.role !== 'admin') {
         // Logged in but not admin -> redirect to home
         router.push('/');

@@ -8,11 +8,11 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'All Bookings', href: '/admin/bookings', icon: CalendarDays },
-    { name: 'Services', href: '/admin/services', icon: Scissors },
-    { name: 'Payments', href: '/admin/payments', icon: CreditCard },
-    { name: 'Revenue', href: '/admin/revenue', icon: BarChart3 },
+    { name: 'Dashboard', href: '/admin/dashboard/', icon: LayoutDashboard },
+    { name: 'All Bookings', href: '/admin/bookings/', icon: CalendarDays },
+    { name: 'Services', href: '/admin/services/', icon: Scissors },
+    { name: 'Payments', href: '/admin/payments/', icon: CreditCard },
+    { name: 'Revenue', href: '/admin/revenue/', icon: BarChart3 },
   ];
 
   // Don't wrap login page in ProtectedRoute or Sidebar
@@ -31,8 +31,7 @@ export default function AdminLayout({ children }) {
           </div>
           <nav className="space-y-1">
             {navigation.map((item) => {
-              // Handle trailing slashes for active state comparison
-              const isActive = pathname === item.href || pathname === `${item.href}/`;
+              const isActive = pathname === item.href;
               const Icon = item.icon;
               return (
                 <Link
