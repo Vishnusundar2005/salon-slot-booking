@@ -25,7 +25,7 @@ export default function Register() {
       const { data } = await api.post('/auth/register', formData);
       login(data, data.token);
       toast.success('Account created successfully!');
-      router.push('/services');
+      router.push('/services/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Registration failed');
     } finally {
@@ -132,7 +132,7 @@ export default function Register() {
           <div className="mt-10 text-center">
             <p className="text-sm font-bold text-gray-400">
               Already have an account?{' '}
-              <Link href="/login" className="text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
+              <Link href="/login/" className="text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
                 Login Here
               </Link>
             </p>

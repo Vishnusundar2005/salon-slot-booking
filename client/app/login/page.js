@@ -22,7 +22,7 @@ export default function Login() {
       const { data } = await api.post('/auth/login', { email, password });
       login(data, data.token);
       toast.success('Welcome back!');
-      router.push('/services');
+      router.push('/services/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Login failed');
     } finally {
@@ -95,7 +95,7 @@ export default function Login() {
           <div className="mt-10 text-center">
             <p className="text-sm font-bold text-gray-400">
               Don't have an account?{' '}
-              <Link href="/register" className="text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
+              <Link href="/register/" className="text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
                 Sign Up Now
               </Link>
             </p>
@@ -103,7 +103,7 @@ export default function Login() {
         </div>
 
         <div className="mt-8 text-center">
-          <Link href="/admin/login" className="inline-flex items-center space-x-2 text-xs font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest hover:text-indigo-400 transition-colors">
+          <Link href="/admin/login/" className="inline-flex items-center space-x-2 text-xs font-black text-gray-300 dark:text-gray-600 uppercase tracking-widest hover:text-indigo-400 transition-colors">
             <User size={14} />
             <span>Switch to Admin Portal</span>
           </Link>

@@ -35,7 +35,7 @@ function BookSlotContent() {
   useEffect(() => {
     if (!serviceId) {
       toast.error('No service selected');
-      router.push('/services');
+      router.push('/services/');
       return;
     }
     
@@ -72,7 +72,7 @@ function BookSlotContent() {
       toast.success('🎉 Booking confirmed!');
       // Wait for a moment to let the user see the success message
       setTimeout(() => {
-        router.push('/my-bookings');
+        router.push('/my-bookings/');
       }, 1500);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Booking failed');

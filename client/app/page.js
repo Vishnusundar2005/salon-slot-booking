@@ -29,14 +29,14 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-5 pt-4">
               <Link 
-                href="/services" 
+                href="/services/" 
                 className="px-10 py-5 text-lg font-black rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 shadow-2xl shadow-indigo-200 dark:shadow-none transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2 group"
               >
                 Book Appointment
                 <Calendar className="group-hover:translate-x-1 transition-transform" size={20} />
               </Link>
               <Link 
-                href="/login" 
+                href="/login/" 
                 className="px-10 py-5 text-lg font-black rounded-2xl text-gray-900 dark:text-white bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all border-2 border-gray-100 dark:border-gray-700 flex items-center justify-center"
               >
                 Login to Manage
@@ -131,7 +131,7 @@ export default function Home() {
             </p>
             <div className="pt-4">
               <Link 
-                href="/services" 
+                href="/services/" 
                 className="inline-flex px-12 py-6 bg-white text-indigo-900 text-lg font-black rounded-3xl hover:bg-indigo-50 transition-colors shadow-2xl"
               >
                 Explore Services
