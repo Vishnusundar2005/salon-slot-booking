@@ -138,14 +138,14 @@ export default function Navbar() {
               <ChevronRight size={18} className="text-gray-400" />
             </a>
             {user && user.role === 'customer' && (
-              <Link
-                href="/my-bookings/"
+              <a
+                href="/slotify/my-bookings/"
                 onClick={closeMenu}
                 className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-gray-900 dark:text-gray-100 bg-gray-50 dark:bg-gray-800 active:bg-indigo-50 dark:active:bg-indigo-900/30 active:text-indigo-600"
               >
                 <span>My Bookings</span>
                 <ChevronRight size={18} className="text-gray-400" />
-              </Link>
+              </a>
             )}
             
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800 mt-4">
