@@ -2,7 +2,9 @@
 const nextConfig = {
   output: 'export',
   basePath: '/slotify',
+  assetPrefix: '/slotify',
   trailingSlash: true,
+  skipTrailingSlashRedirect: true,
   images: {
     unoptimized: true,
   },

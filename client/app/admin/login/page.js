@@ -19,7 +19,7 @@ export default function AdminLogin() {
       const { data } = await api.post('/auth/admin/login', { email, password });
       login(data, data.token);
       toast.success('Admin authenticated');
-      router.push('/admin/dashboard');
+      router.push('/admin/dashboard/');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Admin login failed');
     } finally {
