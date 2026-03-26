@@ -38,6 +38,7 @@ Thumbs.db
 build_log.txt
 diagnose_db.js
 diagnose_reminders.js
+server/scripts/dropIndex.js
 
 # Vercel
 .vercel
