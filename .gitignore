@@ -35,6 +35,7 @@ Thumbs.db
 
 # Project-specific temporary/diagnostic files
 *.txt
+Project_History.md
 build_log.txt
 diagnose_db.js
 diagnose_reminders.js
