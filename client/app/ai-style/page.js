@@ -186,23 +186,24 @@ export default function AIStylePage() {
                         ref={videoRef} 
                         autoPlay 
                         playsInline 
+                        muted
                         className="w-full h-full object-cover transform scale-x-[-1]" 
                       />
                       <canvas ref={canvasRef} className="hidden" />
                       
                       {/* Camera Controls */}
-                      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+                      <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-4 z-20">
                         <button
                           type="button"
                           onClick={capturePhoto}
-                          className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 transition"
+                          className="px-8 py-3 bg-indigo-600 border border-indigo-400 text-white rounded-full font-extrabold shadow-2xl hover:bg-indigo-700 hover:scale-105 transition-all"
                         >
-                          Capture
+                          Capture Photo
                         </button>
                         <button
                           type="button"
                           onClick={stopCamera}
-                          className="px-4 py-2 bg-gray-600 text-white rounded-full font-bold shadow-lg hover:bg-gray-700 transition"
+                          className="px-6 py-3 bg-gray-800/80 backdrop-blur-sm text-white rounded-full font-bold shadow-lg hover:bg-gray-900 transition-all"
                         >
                           Cancel
                         </button>
