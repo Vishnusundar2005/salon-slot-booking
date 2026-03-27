@@ -13,6 +13,7 @@ export default function AIStylePage() {
   
   // Camera state
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [stream, setStream] = useState(null);
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
 
@@ -21,9 +22,18 @@ export default function AIStylePage() {
   // Cleanup camera on unmount
   useEffect(() => {
     return () => {
-      stopCamera();
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
     };
-  }, []);
+  }, [stream]);
+
+  // Attach stream to video element when it mounts
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && stream) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [isCameraActive, stream]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -41,16 +51,14 @@ export default function AIStylePage() {
 
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user' } 
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
-        setImage(null);
-        setPreview(null);
-        setResult(null);
-      }
+      setStream(mediaStream);
+      setIsCameraActive(true);
+      setImage(null);
+      setPreview(null);
+      setResult(null);
     } catch (err) {
       toast.error('Could not access the camera. Please check permissions.');
       console.error('Camera access error:', err);
@@ -58,6 +66,10 @@ export default function AIStylePage() {
   };
 
   const stopCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
     if (videoRef.current && videoRef.current.srcObject) {
       const tracks = videoRef.current.srcObject.getTracks();
       tracks.forEach(track => track.stop());
