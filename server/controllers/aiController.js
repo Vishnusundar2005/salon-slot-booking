@@ -36,11 +36,16 @@ const analyzeStyle = async (req, res) => {
       Only return JSON. No other text.
     `;
 
-    // Process the image into base64 for OpenAI Vision API
-    const base64Image = req.file.buffer.toString('base64');
+    if (!process.env.OPENROUTER_API_KEY) {
+      console.error('OPENROUTER_API_KEY is missing from environment variables');
+      return res.status(500).json({ message: 'Server configuration error: AI API key missing.' });
+    }
 
+    const base64Image = req.file.buffer.toString('base64');
+    console.log('--- AI Styling Analysis Started ---');
+    
     const response = await openai.chat.completions.create({
-      model: 'google/gemini-flash-1.5',
+      model: 'google/gemini-2.0-flash-001',
       messages: [
         {
           role: 'user',
@@ -58,17 +63,19 @@ const analyzeStyle = async (req, res) => {
       max_tokens: 500,
     });
 
+    const content = response.choices[0].message.content.trim();
+    console.log('AI Response received');
+
     let result;
     try {
-      const content = response.choices[0].message.content.trim();
       // Sometimes models wrap JSON in markdown block: ```json ... ```
       const jsonStr = content.startsWith('```json') 
         ? content.slice(7, -3).trim() 
         : content;
       result = JSON.parse(jsonStr);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', response.choices[0].message.content);
-      return res.status(500).json({ message: 'AI returned invalid data format' });
+      console.error('Failed to parse AI response:', content);
+      return res.status(500).json({ message: 'AI returned invalid data format', raw: content });
     }
 
     // Map AI suggested hairstyles/beard styles to our existing database services
