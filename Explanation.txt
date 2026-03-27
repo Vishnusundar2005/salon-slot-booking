@@ -1,0 +1,369 @@
+================================================================================
+  SLOTIFY — SALON SLOT BOOKING SYSTEM
+  Full Project Explanation (Inch by Inch)
+================================================================================
+
+--------------------------------------------------------------------------------
+WHAT IS THIS PROJECT?
+--------------------------------------------------------------------------------
+Slotify is a full-stack web app for a salon/barbershop.
+It lets customers browse services, book time slots, pay online, and get email
+confirmations — while giving the admin a full control panel to manage bookings,
+revenue, and services.
+
+--------------------------------------------------------------------------------
+HIGH-LEVEL ARCHITECTURE
+--------------------------------------------------------------------------------
+
+  salon-slot-booking/
+  ├── client/     ← Next.js Frontend (React)
+  ├── server/     ← Node.js + Express Backend
+  ├── .htaccess   ← Apache routing rules (for deployment on shared hosting)
+  └── README.md
+
+The project is split into TWO separate apps — a frontend and a backend —
+that talk to each other via a REST API.
+
+================================================================================
+  FRONTEND — client/ (Next.js App Router)
+================================================================================
+
+--------------------------------------------------------------------------------
+client/app/ — Pages (Routes)
+--------------------------------------------------------------------------------
+Next.js uses file-based routing — every folder = a URL page.
+
+  Folder/File        | URL              | What it does
+  -------------------|------------------|------------------------------------------
+  page.js            | /                | Home page — Hero section, features
+                     |                  | ("Expert Stylists", "Zero Wait Time"),
+                     |                  | CTA button
+  layout.js          | (global)         | Root layout — wraps all pages with
+                     |                  | Navbar, Footer, theme providers
+  login/             | /login           | Login form for customers & admin
+  register/          | /register        | New user sign-up form
+  services/          | /services        | Displays all available salon services
+                     |                  | (haircut, beard, etc.)
+  book-slot/         | /book-slot       | Calendar + time slot picker for booking
+  my-bookings/       | /my-bookings     | Customer's personal booking history
+  admin/             | /admin/...       | Admin portal (protected, admin-only)
+
+--------------------------------------------------------------------------------
+Admin sub-pages — client/app/admin/
+--------------------------------------------------------------------------------
+
+  Folder        | URL                  | Purpose
+  --------------|----------------------|----------------------------------------
+  layout.js     | /admin               | Admin sidebar layout — checks if admin
+  dashboard/    | /admin/dashboard     | Overview stats: total bookings, revenue
+  bookings/     | /admin/bookings      | View/edit all bookings, block time slots
+  services/     | /admin/services      | Add/edit/delete salon services
+  payments/     | /admin/payments      | View all payment records
+  revenue/      | /admin/revenue       | Revenue charts and reports
+  login/        | /admin/login         | Admin-specific login page
+
+--------------------------------------------------------------------------------
+client/components/ — Reusable UI Pieces
+--------------------------------------------------------------------------------
+
+  File                      | What it does
+  --------------------------|----------------------------------------------------
+  Navbar.jsx                | Top nav bar — logo, links, dark mode toggle,
+                            | login/logout button
+  Footer.jsx                | Simple bottom footer
+  Loader.jsx                | Spinning loading indicator shown during API calls
+  ServiceCard.jsx           | A card showing one service (name, price, duration)
+                            | with a "Book" button
+  SlotCard.jsx              | Displays a single time slot (e.g. "10:00 AM") —
+                            | green if available, grey if taken
+  BookingDetailsModal.jsx   | A popup modal showing full details of a booking
+  ProtectedRoute.jsx        | Wraps pages — redirects to login if user is not
+                            | authenticated
+
+--------------------------------------------------------------------------------
+client/context/ — Global State (React Context API)
+--------------------------------------------------------------------------------
+
+  File               | What it stores
+  -------------------|--------------------------------------------------------------
+  AuthContext.jsx    | The logged-in user object + login/logout functions —
+                     | accessible anywhere in the app
+  ThemeContext.jsx   | Dark/Light mode preference — toggles the entire app's theme
+
+--------------------------------------------------------------------------------
+client/services/ — API Communication
+--------------------------------------------------------------------------------
+
+  File     | What it does
+  ---------|----------------------------------------------------------------
+  api.js   | Creates an Axios instance pre-configured with the backend URL
+           | and auth token — all API calls go through this file
+
+--------------------------------------------------------------------------------
+client/hooks/ — Custom React Hooks
+--------------------------------------------------------------------------------
+Reusable logic extracted from components (e.g., useAuth, useBookings)
+to keep pages clean and avoid code duplication.
+
+--------------------------------------------------------------------------------
+client/styles/ — CSS
+--------------------------------------------------------------------------------
+
+  File          | Purpose
+  --------------|--------------------------------------------------------------
+  globals.css   | Global CSS: fonts (Outfit/Inter from Google), color variables,
+                | base styles, dark mode support
+
+--------------------------------------------------------------------------------
+client/next.config.mjs — Next.js Config
+--------------------------------------------------------------------------------
+Configures the app for static export (output: 'export'), sets the base path
+to /slotify/ for subdirectory deployment on the custom domain.
+
+================================================================================
+  BACKEND — server/ (Node.js + Express)
+================================================================================
+
+--------------------------------------------------------------------------------
+Entry Points
+--------------------------------------------------------------------------------
+
+  File        | Purpose
+  ------------|----------------------------------------------------------------
+  server.js   | Starts the HTTP server, connects to MongoDB, launches
+              | schedulers (reminder emails & self-ping to prevent cold starts)
+  app.js      | Creates the Express app, registers all middleware and routes
+  seed.js     | One-time script to pre-populate the DB with sample services
+
+--------------------------------------------------------------------------------
+server/models/ — Database Schemas (MongoDB via Mongoose)
+--------------------------------------------------------------------------------
+These define the SHAPE OF THE DATA stored in the database.
+
+  File          | Collection  | Key Fields
+  --------------|-------------|------------------------------------------------
+  User.js       | users       | name, email, password (bcrypt hashed), phone,
+                |             | role (customer/admin), totalBookings, totalSpent
+  Booking.js    | bookings    | user (ref), service (ref), date (YYYY-MM-DD),
+                |             | slotTime (HH:mm), status (pending/confirmed/
+                |             | completed/cancelled/expired/blocked),
+                |             | reminderSent
+  Service.js    | services    | name, description, price, duration (in mins)
+  Payment.js    | payments    | booking (ref), user (ref), amount, status,
+                |             | paymentMethod
+
+--------------------------------------------------------------------------------
+server/routes/ — URL Routing
+--------------------------------------------------------------------------------
+Each file maps URL paths to controller functions.
+
+  File                 | Base URL          | Endpoints
+  ---------------------|-------------------|-------------------------------------
+  authRoutes.js        | /api/auth         | POST /register, POST /login
+  bookingRoutes.js     | /api/bookings     | GET all, POST create, PUT edit/
+                       |                   | cancel, DELETE, GET available slots
+  serviceRoutes.js     | /api/services     | GET all, POST/PUT/DELETE (admin only)
+  paymentRoutes.js     | /api/payments     | POST create payment, GET history
+  reportRoutes.js      | /api/reports      | GET revenue summary, booking stats
+
+--------------------------------------------------------------------------------
+server/controllers/ — Business Logic
+--------------------------------------------------------------------------------
+The "brains" — each controller handles what actually happens when a route is hit.
+
+  File                    | Key Functions
+  ------------------------|------------------------------------------------------
+  authController.js       | registerUser() — creates user
+                          | loginUser() — validates password, returns JWT token
+  bookingController.js    | createBooking() — check slot availability → create
+                          | booking → send confirmation email
+                          | editBooking(), cancelBooking(), blockSlot() (admin),
+                          | getAvailableSlots()
+  serviceController.js    | getServices(), createService(),
+                          | updateService(), deleteService()
+  paymentController.js    | createPayment() — records payment, updates totalSpent
+                          | on user; getPayments()
+  reportController.js     | getRevenueReport() — aggregates booking/payment data
+                          | for admin charts
+
+--------------------------------------------------------------------------------
+server/middleware/ — Request Interceptors
+--------------------------------------------------------------------------------
+
+  File                  | What it does
+  ----------------------|--------------------------------------------------------
+  authMiddleware.js     | protect() — reads JWT token from request header,
+                        | verifies it, attaches req.user to the request
+  adminMiddleware.js    | adminOnly() — runs after protect(), checks if
+                        | req.user.role === 'admin', else returns 403 Forbidden
+  errorMiddleware.js    | Global error handler — catches all errors and sends
+                        | consistent JSON error responses
+
+--------------------------------------------------------------------------------
+server/services/ — Background Services
+--------------------------------------------------------------------------------
+
+  File                  | What it does
+  ----------------------|--------------------------------------------------------
+  emailService.js       | Sends emails via Resend API — booking confirmations,
+                        | reminders, and cancellation notices
+  reminderService.js    | Runs on a cron schedule — finds bookings due tomorrow
+                        | with reminderSent: false, emails all of them
+  revenueService.js     | Helper functions for computing daily/monthly revenue
+                        | aggregations
+
+--------------------------------------------------------------------------------
+server/schedulers/ — Cron Jobs
+--------------------------------------------------------------------------------
+Timed background tasks:
+  - Mark expired bookings automatically
+  - Send reminder emails the day before an appointment
+  - Self-ping the Render backend every 14 minutes to prevent cold starts
+
+--------------------------------------------------------------------------------
+server/config/ — Database Connection
+--------------------------------------------------------------------------------
+Contains db.js — the Mongoose connect() call using MONGO_URI from the .env file.
+
+================================================================================
+  HOW A BOOKING WORKS (Full Flow)
+================================================================================
+
+  Customer → /services        → picks a service
+           → /book-slot       → picks a date & time slot
+           → API POST /api/bookings
+           → server checks slot availability
+           → Payment recorded
+           → Booking created in MongoDB
+           → emailService sends confirmation email (via Resend)
+           → reminderService emails again the day before the appointment
+
+================================================================================
+  AUTHENTICATION FLOW
+================================================================================
+
+  Register/Login → server hashes password (bcrypt)
+                → returns JWT token
+  Client stores token in localStorage via AuthContext
+  Every API request → Axios sends token in Authorization header
+  authMiddleware verifies token → grants or denies access
+  Admin routes also run adminMiddleware → checks role === 'admin'
+
+================================================================================
+  TECH STACK SUMMARY
+================================================================================
+
+  Layer        | Technology
+  -------------|--------------------------------------------------------------
+  Frontend     | Next.js 14 (App Router), React, Tailwind CSS
+  Backend      | Node.js, Express.js
+  Database     | MongoDB (Mongoose ODM)
+  Auth         | JWT + bcrypt
+  Email        | Resend API
+  Deployment   | Frontend → Apache subdirectory (/slotify/)
+               | Backend  → Render (cloud hosting)
+
+================================================================================
+  SUPER ADMIN FEATURE
+================================================================================
+
+--------------------------------------------------------------------------------
+OVERVIEW
+--------------------------------------------------------------------------------
+A "Super Admin" role sits above normal admins.
+Only the super admin can create and delete admin accounts.
+The "Manage Admins" option in the admin sidebar is INVISIBLE to regular admins —
+it only appears when the super admin is logged in.
+
+  Role Hierarchy:
+    superadmin  →  can do everything admin can + manage admin accounts
+    admin       →  can manage bookings, services, payments, revenue
+    customer    →  can book slots, view their own bookings
+
+Super Admin Credentials (seeded):
+  Name     : Vishnusundar
+  Email    : skvishnu0204@gmail.com
+  Password : Vishnu@007
+  Login at : /admin/login  (same portal as regular admins)
+
+--------------------------------------------------------------------------------
+BACKEND CHANGES
+--------------------------------------------------------------------------------
+
+  File                              | What changed
+  ----------------------------------|--------------------------------------------
+  server/models/User.js             | Added 'superadmin' to role enum
+                                    | (was: customer/admin → now: customer/admin/
+                                    | superadmin)
+  server/middleware/adminMiddleware  | adminOnly() — updated to allow superadmin
+  .js                               | through (superadmin can do everything admin
+                                    | can)
+                                    | superAdminOnly() — NEW middleware; blocks
+                                    | everyone except superadmin (returns 403)
+  server/controllers/authController | adminLogin() — updated to allow superadmin
+  .js                               | to log in via the admin login portal
+  server/controllers/adminController| NEW FILE
+  .js                               | getAllAdmins()  — lists all admin accounts
+                                    | createAdmin()  — creates a new admin user
+                                    | deleteAdmin()  — deletes an admin (cannot
+                                    |                   delete superadmin)
+  server/routes/adminRoutes.js      | NEW FILE
+                                    | GET    /api/admin/admins      → getAllAdmins
+                                    | POST   /api/admin/admins      → createAdmin
+                                    | DELETE /api/admin/admins/:id  → deleteAdmin
+                                    | All 3 routes are protected by:
+                                    |   protect + superAdminOnly
+  server/app.js                     | Registered adminRoutes at /api/admin
+  server/seed.js                    | Added superadmin seeding (Vishnusundar)
+                                    | alongside the existing admin & customer
+
+--------------------------------------------------------------------------------
+FRONTEND CHANGES
+--------------------------------------------------------------------------------
+
+  File                                    | What changed
+  ----------------------------------------|--------------------------------------
+  client/components/ProtectedRoute.jsx    | requireAdmin now accepts both 'admin'
+                                          | and 'superadmin' roles (superadmin is a
+                                          | superset of admin)
+  client/app/admin/layout.js              | Reads user from AuthContext
+                                          | Shows "Super Admin" badge under the
+                                          | "Admin Portal" heading (superadmin only)
+                                          | Shows "Manage Admins" nav item with
+                                          | ShieldCheck icon in purple (superadmin
+                                          | only — completely hidden from admins)
+  client/app/admin/manage-admins/page.js  | NEW PAGE — /admin/manage-admins/
+                                          | Lists all admin accounts
+                                          | "Add Admin" form: name, email, phone,
+                                          | password (with show/hide toggle)
+                                          | Delete button with confirmation step
+                                          | Redirects away if user is not superadmin
+
+--------------------------------------------------------------------------------
+HOW SUPER ADMIN ACCESS CONTROL WORKS
+--------------------------------------------------------------------------------
+
+  1. Super admin logs in at /admin/login with their credentials
+  2. Backend returns user object with role: 'superadmin'
+  3. AuthContext stores this user in state
+  4. Admin layout reads user.role — if 'superadmin', renders the
+     "Manage Admins" nav item; otherwise it is simply not rendered
+  5. The Manage Admins page double-checks on mount and redirects away
+     if user is not superadmin
+  6. All /api/admin/* API calls also verify role server-side via
+     superAdminOnly middleware — even if someone manually navigates there
+
+  Summary: Access is enforced at BOTH the UI layer and the API layer.
+
+--------------------------------------------------------------------------------
+HOW TO RE-SEED (if DB is reset)
+--------------------------------------------------------------------------------
+  cd server
+  node seed.js
+
+  This recreates: superadmin (Vishnusundar), admin (admin@slotify.com),
+  customer (john@example.com), and all 5 salon services.
+
+================================================================================
+  END OF EXPLANATION
+================================================================================
