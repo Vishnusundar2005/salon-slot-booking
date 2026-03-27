@@ -60,7 +60,7 @@ This document contains a chronological log of all major changes, feature impleme
 - **Objective:** Create a Super Admin role and implement an AI-powered styling analyzer.
 - **Outcome:**
   - **Super Admin:** Implemented role-based access for managing regular admins.
-  - **AI Styling:** Built an image analysis feature using **OpenAI Vision API**.
+  - **AI Styling:** Built an image analysis feature using **OpenRouter** (Gemini 1.5 Flash).
   - **Backend:** Added `aiRoutes` and `aiController` with `multer` for image uploads.
   - **Frontend:** Created a premium `/ai-style` page for personalized hair/beard suggestions.
   - **Database Mapping:** Integrated AI results with existing salon service collections.

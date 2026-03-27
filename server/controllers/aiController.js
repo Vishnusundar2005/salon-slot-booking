@@ -11,7 +11,12 @@ const analyzeStyle = async (req, res) => {
     }
 
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+      apiKey: process.env.OPENROUTER_API_KEY,
+      defaultHeaders: {
+        'HTTP-Referer': 'https://vishnu.techmerise.com/slotify/', // Required by OpenRouter
+        'X-Title': 'Slotify Salon AI', // Optional but good practice
+      },
     });
 
     // Design the prompt to get a structured JSON response
@@ -35,7 +40,7 @@ const analyzeStyle = async (req, res) => {
     const base64Image = req.file.buffer.toString('base64');
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'google/gemini-flash-1.5',
       messages: [
         {
           role: 'user',
