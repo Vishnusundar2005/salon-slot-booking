@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../context/ThemeContext';
-import { Menu, X, Scissors, LayoutDashboard, LogOut, ChevronRight, Sun, Moon } from 'lucide-react';
+import { Menu, X, Scissors, LayoutDashboard, LogOut, ChevronRight, Sun, Moon, Sparkles } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -39,6 +39,10 @@ export default function Navbar() {
               </a>
               <a href="/slotify/services/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
                 Services
+              </a>
+              <a href="/slotify/ai-style/" className="flex items-center text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 px-1 pt-1 text-sm font-black transition-colors">
+                <Sparkles size={16} className="mr-1" />
+                AI Styling
               </a>
               {user && user.role === 'customer' && (
                 <a href="/slotify/my-bookings/" className="text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 px-1 pt-1 text-sm font-bold transition-colors">
@@ -121,6 +125,17 @@ export default function Navbar() {
                 {theme === 'light' ? <><Moon size={18} /><span>Dark Mode</span></> : <><Sun size={18} /><span>Light Mode</span></>}
               </button>
             </div>
+            <a
+              href="/slotify/ai-style/"
+              onClick={closeMenu}
+              className="flex items-center justify-between px-4 py-4 rounded-2xl text-base font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 active:bg-indigo-100"
+            >
+              <div className="flex items-center">
+                <Sparkles size={18} className="mr-2" />
+                <span>AI Style Analyzer</span>
+              </div>
+              <ChevronRight size={18} className="text-indigo-400" />
+            </a>
             <a
               href="/slotify/"
               onClick={closeMenu}

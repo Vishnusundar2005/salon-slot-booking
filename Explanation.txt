@@ -365,5 +365,36 @@ HOW TO RE-SEED (if DB is reset)
   customer (john@example.com), and all 5 salon services.
 
 ================================================================================
+  AI STYLING FEATURE (NEW 🔥)
+================================================================================
+
+--------------------------------------------------------------------------------
+OVERVIEW
+--------------------------------------------------------------------------------
+The AI Style Analyzer allows users to upload a selfie and receive personalized
+hairstyles and beard suggestions based on their face shape.
+
+  Flow:
+    1. User uploads a selfie on the /ai-style page.
+    2. Backend sends the image to OpenAI Vision API (GPT-4o).
+    3. AI analyzes face shape and returns suggestions in JSON.
+    4. Backend maps suggestions to existing Services in the Database.
+    5. UI displays results with direct "Book Now" links.
+
+--------------------------------------------------------------------------------
+TECHNICAL IMPLEMENTATION
+--------------------------------------------------------------------------------
+
+  File                              | Purpose
+  ----------------------------------|--------------------------------------------
+  server/controllers/aiController.js| Handles OpenAI Vision API integration and
+                                    | database mapping for recommended services.
+  server/routes/aiRoutes.js         | Defines POST /api/ai/hairstyle, handles
+                                    | image uploads via multer.
+  client/app/ai-style/page.js       | New page with image upload UI, analysis
+                                    | loading states, and result cards.
+  client/components/Navbar.jsx      | Added "AI Styling" link with Sparkles icon.
+
+--------------------------------------------------------------------------------
   END OF EXPLANATION
 ================================================================================
