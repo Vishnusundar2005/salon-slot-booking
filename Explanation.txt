@@ -375,7 +375,7 @@ The AI Style Analyzer allows users to upload a selfie and receive personalized
 hairstyles and beard suggestions based on their face shape.
 
   Flow:
-    1. User uploads a selfie on the /ai-style page.
+    1. User uploads a selfie or takes a live photo on the /ai-style page.
     2. Backend sends the image to OpenRouter API (Gemini 1.5 Flash).
     3. AI analyzes face shape and returns suggestions in JSON.
     4. Backend maps suggestions to existing Services in the Database.

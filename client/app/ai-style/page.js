@@ -1,8 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '../../services/api';
-import { Sparkles, Upload, Camera, CheckCircle, ArrowRight, Scissors } from 'lucide-react';
+import { Sparkles, Upload, Camera, CheckCircle, ArrowRight, Scissors, Video, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function AIStylePage() {
@@ -10,7 +10,20 @@ export default function AIStylePage() {
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  
+  // Camera state
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
   const router = useRouter();
+
+  // Cleanup camera on unmount
+  useEffect(() => {
+    return () => {
+      stopCamera();
+    };
+  }, []);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -22,6 +35,59 @@ export default function AIStylePage() {
       setImage(file);
       setPreview(URL.createObjectURL(file));
       setResult(null);
+      stopCamera();
+    }
+  };
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: 'user' } 
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsCameraActive(true);
+        setImage(null);
+        setPreview(null);
+        setResult(null);
+      }
+    } catch (err) {
+      toast.error('Could not access the camera. Please check permissions.');
+      console.error('Camera access error:', err);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+          if (file.size > 2 * 1024 * 1024) {
+            toast.error('Captured image is too large');
+            return;
+          }
+          setImage(file);
+          setPreview(URL.createObjectURL(file));
+          stopCamera();
+        }
+      }, 'image/jpeg', 0.9);
     }
   };
 
@@ -58,14 +124,37 @@ export default function AIStylePage() {
           AI Style Analyzer
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Upload a selfie and let our AI suggest the perfect hairstyle and beard style based on your unique face shape.
+          Upload a selfie or take a live photo, and let our AI suggest the perfect hairstyle and beard style based on your unique face shape.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        {/* Upload Section */}
+        {/* Upload/Camera Section */}
         <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
           <form onSubmit={handleSubmit} className="space-y-6">
+            
+            {/* Input Selection Tabs */}
+            {!preview && !isCameraActive && (
+              <div className="flex space-x-4 mb-4">
+                <button
+                  type="button"
+                  onClick={() => document.getElementById('image-upload').click()}
+                  className="flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-300 rounded-2xl hover:border-indigo-400 hover:bg-indigo-50 transition-colors cursor-pointer"
+                >
+                  <Upload className="w-8 h-8 text-indigo-500 mb-2" />
+                  <span className="text-sm font-bold text-gray-700">Upload Photo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  className="flex-1 flex flex-col items-center justify-center py-6 border-2 border-dashed border-gray-300 rounded-2xl hover:border-indigo-400 hover:bg-indigo-50 transition-colors cursor-pointer"
+                >
+                  <Video className="w-8 h-8 text-indigo-500 mb-2" />
+                  <span className="text-sm font-bold text-gray-700">Take Live Photo</span>
+                </button>
+              </div>
+            )}
+
             <div className="relative group">
               <input
                 type="file"
@@ -74,38 +163,58 @@ export default function AIStylePage() {
                 className="hidden"
                 id="image-upload"
               />
-              <label
-                htmlFor="image-upload"
-                className={`flex flex-col items-center justify-center w-full h-80 border-2 border-dashed rounded-3xl cursor-pointer transition-all ${
-                  preview 
-                    ? 'border-indigo-400 bg-indigo-50' 
-                    : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-gray-400'
-                }`}
-              >
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-[1.4rem]"
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <div className="p-4 bg-white rounded-full shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                      <Camera className="w-8 h-8 text-indigo-500" />
-                    </div>
-                    <p className="mb-2 text-sm text-gray-700 font-bold">Click to upload selfie</p>
-                    <p className="text-xs text-gray-500 italic">PNG, JPG or JPEG (MAX. 2MB)</p>
-                  </div>
-                )}
-              </label>
-              {preview && !loading && !result && (
-                <button
-                  type="button"
-                  onClick={() => { setImage(null); setPreview(null); }}
-                  className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-md"
-                >
-                  <ArrowRight className="h-5 w-5 rotate-45" />
-                </button>
+              
+              {/* Media Display Area */}
+              {(preview || isCameraActive) && (
+                <div className="relative w-full h-80 border-2 border-indigo-400 bg-black rounded-3xl overflow-hidden shadow-inner">
+                  
+                  {isCameraActive ? (
+                    <>
+                      <video 
+                        ref={videoRef} 
+                        autoPlay 
+                        playsInline 
+                        className="w-full h-full object-cover transform scale-x-[-1]" 
+                      />
+                      <canvas ref={canvasRef} className="hidden" />
+                      
+                      {/* Camera Controls */}
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
+                        <button
+                          type="button"
+                          onClick={capturePhoto}
+                          className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 transition"
+                        >
+                          Capture
+                        </button>
+                        <button
+                          type="button"
+                          onClick={stopCamera}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-full font-bold shadow-lg hover:bg-gray-700 transition"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : preview ? (
+                    <>
+                      <img
+                        src={preview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      {!loading && !result && (
+                        <button
+                          type="button"
+                          onClick={() => { setImage(null); setPreview(null); }}
+                          className="absolute top-4 right-4 bg-white/80 backdrop-blur-md p-2 rounded-full text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-md cursor-pointer z-10"
+                        >
+                          <XCircle className="h-6 w-6" />
+                        </button>
+                      )}
+                    </>
+                  ) : null}
+                </div>
               )}
             </div>
 
@@ -113,9 +222,9 @@ export default function AIStylePage() {
               type="submit"
               disabled={!image || loading}
               className={`w-full flex items-center justify-center px-6 py-4 rounded-2xl text-lg font-bold text-white transition-all transform active:scale-95 ${
-                loading
+                loading || !image
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200'
+                  : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 cursor-pointer'
               }`}
             >
               {loading ? (
@@ -232,7 +341,7 @@ export default function AIStylePage() {
         <div>
           <p className="text-sm font-bold text-amber-900 mb-1">AI Disclaimer</p>
           <p className="text-xs text-amber-700 leading-relaxed">
-            AI suggestions are for reference only and based on visual analysis. Hairstyles can look different based on hair texture and personal preference. Consult with our expert barbers for the best final decision.
+            AI suggestions are for reference only and based on visual analysis. Hairstyles can look different based on hair texture and personal preference. Consult with our expert barbers for the best final decision. You may need to grant camera permissions to use the live photo feature.
           </p>
         </div>
       </div>
