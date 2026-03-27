@@ -1,10 +1,13 @@
 'use client';
+import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { LayoutDashboard, CalendarDays, Scissors, CreditCard, BarChart3 } from 'lucide-react';
+import { AuthContext } from '../../context/AuthContext';
+import { LayoutDashboard, CalendarDays, Scissors, CreditCard, BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
+  const { user } = useContext(AuthContext);
 
   const navigation = [
     { name: 'Dashboard', href: '/slotify/admin/dashboard/', icon: LayoutDashboard },
@@ -26,6 +29,11 @@ export default function AdminLayout({ children }) {
         <aside className="w-full md:w-64 bg-white shadow-sm border border-gray-100 rounded-2xl p-4 h-fit">
           <div className="mb-6 px-4">
             <h2 className="text-xl font-extrabold text-indigo-900">Admin Portal</h2>
+            {user?.role === 'superadmin' && (
+              <span className="inline-block mt-1 text-xs font-semibold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
+                Super Admin
+              </span>
+            )}
           </div>
           <nav className="space-y-1">
             {navigation.map((item) => {
@@ -49,6 +57,27 @@ export default function AdminLayout({ children }) {
                 </a>
               );
             })}
+
+            {/* Super Admin exclusive: Manage Admins */}
+            {user?.role === 'superadmin' && (() => {
+              const href = '/slotify/admin/manage-admins/';
+              const isActive = typeof window !== 'undefined'
+                ? window.location.pathname === href || window.location.pathname === href.replace(/\/$/, '')
+                : pathname === href.replace('/slotify', '');
+              return (
+                <a
+                  href={href}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-colors ${
+                    isActive
+                      ? 'bg-purple-50 text-purple-700'
+                      : 'text-gray-600 hover:bg-purple-50 hover:text-purple-700'
+                  }`}
+                >
+                  <ShieldCheck className={`mr-3 h-5 w-5 ${isActive ? 'text-purple-600' : 'text-gray-400'}`} />
+                  Manage Admins
+                </a>
+              );
+            })()}
           </nav>
         </aside>
 

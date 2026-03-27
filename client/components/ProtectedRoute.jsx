@@ -5,17 +5,19 @@ import { useAuth } from '../hooks/useAuth';
 export default function ProtectedRoute({ children, requireAdmin = false }) {
   const { user, loading } = useAuth();
 
+  const isAdmin = user?.role === 'admin' || user?.role === 'superadmin';
+
   useEffect(() => {
     if (!loading) {
       if (!user) {
         // Not logged in -> redirect using window.location for reliability on static hosts
         window.location.href = requireAdmin ? '/slotify/admin/login/' : '/slotify/login/';
-      } else if (requireAdmin && user.role !== 'admin') {
-        // Logged in but not admin -> redirect to home
+      } else if (requireAdmin && !isAdmin) {
+        // Logged in but not admin/superadmin -> redirect to home
         window.location.href = '/slotify/';
       }
     }
-  }, [user, loading, requireAdmin]);
+  }, [user, loading, requireAdmin, isAdmin]);
 
   if (loading) {
     return (
@@ -26,7 +28,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
   }
 
   // Render children only if user requirements are met
-  if (!user || (requireAdmin && user.role !== 'admin')) {
+  if (!user || (requireAdmin && !isAdmin)) {
     return null; // Will redirect in useEffect
   }
 

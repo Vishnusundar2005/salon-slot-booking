@@ -4,6 +4,7 @@
  * Run: node seed.js
  *
  * Seeds:
+ *  - 1 Super Admin (Vishnusundar)
  *  - 1 Admin user
  *  - 1 Customer user
  *  - 5 Salon services (Haircut, Beard Trim, Hair Spa, Hair Colouring, Facial)
@@ -15,6 +16,14 @@ const User = require('./models/User');
 const Service = require('./models/Service');
 
 const connectDB = require('./config/db');
+
+const superAdminUser = {
+  name: 'Vishnusundar',
+  email: 'skvishnu0204@gmail.com',
+  password: 'Vishnu@007',
+  phone: '+919999999990',
+  role: 'superadmin',
+};
 
 const adminUser = {
   name: 'Admin',
@@ -81,10 +90,12 @@ const seed = async () => {
   console.log('🗑️  Cleared existing Users and Services');
 
   // --- Create users ---
+  const superAdmin = await User.create(superAdminUser);
   const admin = await User.create(adminUser);
   const customer = await User.create(customerUser);
-  console.log(`👤 Admin created:    ${admin.email}`);
-  console.log(`👤 Customer created: ${customer.email}`);
+  console.log(`👑 Super Admin created: ${superAdmin.email}`);
+  console.log(`👤 Admin created:       ${admin.email}`);
+  console.log(`👤 Customer created:    ${customer.email}`);
 
   // --- Create services ---
   const createdServices = await Service.insertMany(services);
@@ -94,10 +105,11 @@ const seed = async () => {
   );
 
   console.log('\n✅ Database seeded successfully!\n');
-  console.log('─────────────────────────────────────');
-  console.log('Admin login:    admin@slotify.com / Admin@123');
-  console.log('Customer login: john@example.com  / Customer@123');
-  console.log('─────────────────────────────────────\n');
+  console.log('─────────────────────────────────────────────');
+  console.log('Super Admin login: skvishnu0204@gmail.com / Vishnu@007');
+  console.log('Admin login:       admin@slotify.com      / Admin@123');
+  console.log('Customer login:    john@example.com       / Customer@123');
+  console.log('─────────────────────────────────────────────\n');
 
   process.exit(0);
 };

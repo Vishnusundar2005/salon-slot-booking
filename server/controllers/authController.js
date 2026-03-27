@@ -85,7 +85,7 @@ const adminLogin = async (req, res) => {
     }
 
     // Block customers from using the admin login portal
-    if (user.role !== 'admin') {
+    if (user.role !== 'admin' && user.role !== 'superadmin') {
       return res.status(403).json({ message: 'Access denied: Admin accounts only' });
     }
 
