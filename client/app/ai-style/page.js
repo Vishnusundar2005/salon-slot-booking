@@ -20,20 +20,26 @@ export default function AIStylePage() {
   const router = useRouter();
 
   // Cleanup camera on unmount
+  const streamRef = useRef(null);
   useEffect(() => {
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
+    streamRef.current = stream;
   }, [stream]);
 
-  // Attach stream to video element when it mounts
   useEffect(() => {
-    if (isCameraActive && videoRef.current && stream) {
-      videoRef.current.srcObject = stream;
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
+  const videoCallbackRef = (node) => {
+    videoRef.current = node;
+    if (node && stream) {
+      node.srcObject = stream;
+      node.play().catch(err => console.error('Video play error:', err));
     }
-  }, [isCameraActive, stream]);
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -51,6 +57,7 @@ export default function AIStylePage() {
 
   const startCamera = async () => {
     try {
+      // Try to get front-facing camera first
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user' } 
       });
@@ -60,8 +67,25 @@ export default function AIStylePage() {
       setPreview(null);
       setResult(null);
     } catch (err) {
-      toast.error('Could not access the camera. Please check permissions.');
-      console.error('Camera access error:', err);
+      if (err.name === 'NotFoundError' || err.name === 'OverconstrainedError') {
+        try {
+          // Fallback: Just grab any available camera
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+            video: true 
+          });
+          setStream(fallbackStream);
+          setIsCameraActive(true);
+          setImage(null);
+          setPreview(null);
+          setResult(null);
+        } catch (fallbackErr) {
+          toast.error('Could not find any camera device on your system.');
+          console.error('Camera fallback error:', fallbackErr);
+        }
+      } else {
+        toast.error('Could not access the camera. Please check permissions.');
+        console.error('Camera access error:', err);
+      }
     }
   };
 
@@ -183,7 +207,7 @@ export default function AIStylePage() {
                   {isCameraActive ? (
                     <>
                       <video 
-                        ref={videoRef} 
+                        ref={videoCallbackRef} 
                         autoPlay 
                         playsInline 
                         muted

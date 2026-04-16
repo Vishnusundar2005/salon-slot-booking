@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../hooks/useTheme';
 import { Menu, X, Scissors, LayoutDashboard, LogOut, ChevronRight, Sun, Moon, Sparkles } from 'lucide-react';
 
 export default function Navbar() {

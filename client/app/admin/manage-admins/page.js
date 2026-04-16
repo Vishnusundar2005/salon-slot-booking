@@ -1,12 +1,12 @@
 'use client';
 import { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthContext } from '../../../context/AuthContext';
+import { useAuth } from '../../../hooks/useAuth';
 import api from '../../../services/api';
 import { ShieldCheck, Trash2, Plus, X, Eye, EyeOff } from 'lucide-react';
 
 export default function ManageAdminsPage() {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   const [admins, setAdmins] = useState([]);

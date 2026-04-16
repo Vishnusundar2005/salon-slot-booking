@@ -2,12 +2,12 @@
 import { useContext } from 'react';
 import { usePathname } from 'next/navigation';
 import ProtectedRoute from '../../components/ProtectedRoute';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { LayoutDashboard, CalendarDays, Scissors, CreditCard, BarChart3, ShieldCheck } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
 
   const navigation = [
     { name: 'Dashboard', href: '/slotify/admin/dashboard/', icon: LayoutDashboard },
