@@ -60,7 +60,7 @@ export default function Navbar() {
                   <span className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{user.role}</span>
                   <span className="text-sm font-black text-gray-900 dark:text-gray-100">Hi, {user.name.split(' ')[0]}</span>
                 </div>
-                {user.role === 'admin' && (
+                {(user.role === 'admin' || user.role === 'superadmin') && (
                   <a 
                     href="/slotify/admin/dashboard/" 
                     className="flex items-center space-x-2 bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-100 transition-colors"
@@ -170,7 +170,7 @@ export default function Navbar() {
                     <p className="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-1">{user.role}</p>
                     <p className="text-lg font-black text-gray-900 dark:text-white">Hi, {user.name}</p>
                   </div>
-                  {user.role === 'admin' && (
+                  {(user.role === 'admin' || user.role === 'superadmin') && (
                     <a
                       href="/slotify/admin/dashboard/"
                       onClick={closeMenu}
